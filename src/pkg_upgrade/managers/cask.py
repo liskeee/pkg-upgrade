@@ -10,6 +10,8 @@ class CaskManager(PackageManager):
     name = "Homebrew Casks"
     key = "cask"
     icon = "🍻"
+    platforms = frozenset({"macos"})
+    depends_on = ("brew",)
 
     async def is_available(self) -> bool:
         return shutil.which("brew") is not None

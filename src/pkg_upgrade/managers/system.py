@@ -13,6 +13,7 @@ class SystemManager(PackageManager):
     name = "System Updates"
     key = "system"
     icon = "🍎"
+    platforms = frozenset({"macos"})
 
     async def is_available(self) -> bool:
         return shutil.which("softwareupdate") is not None

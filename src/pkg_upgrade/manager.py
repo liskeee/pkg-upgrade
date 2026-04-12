@@ -12,6 +12,9 @@ class PackageManager(ABC):
     name: ClassVar[str]
     key: ClassVar[str]
     icon: ClassVar[str]
+    platforms: ClassVar[frozenset[str]] = frozenset()
+    depends_on: ClassVar[tuple[str, ...]] = ()
+    install_hint: ClassVar[str] = ""
 
     @abstractmethod
     async def is_available(self) -> bool: ...

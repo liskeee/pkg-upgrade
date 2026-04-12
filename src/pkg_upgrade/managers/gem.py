@@ -12,6 +12,7 @@ class GemManager(PackageManager):
     name = "gem"
     key = "gem"
     icon = "💎"
+    platforms = frozenset({"macos", "linux", "windows"})
 
     async def is_available(self) -> bool:
         return shutil.which("gem") is not None

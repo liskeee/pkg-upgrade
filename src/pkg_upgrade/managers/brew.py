@@ -10,6 +10,7 @@ class BrewManager(PackageManager):
     name = "Homebrew Formulas"
     key = "brew"
     icon = "🍺"
+    platforms = frozenset({"macos", "linux"})
 
     async def is_available(self) -> bool:
         return shutil.which("brew") is not None

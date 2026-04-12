@@ -10,6 +10,8 @@ class PipManager(PackageManager):
     name = "pip"
     key = "pip"
     icon = "🐍"
+    platforms = frozenset({"macos", "linux", "windows"})
+    depends_on = ("brew",)
 
     async def is_available(self) -> bool:
         return shutil.which("pip3") is not None

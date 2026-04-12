@@ -1,7 +1,8 @@
 import pytest
 
+from pkg_upgrade.manager import PackageManager
 from pkg_upgrade.managers import ALL_MANAGERS, get_managers
-from pkg_upgrade.models import Package
+from pkg_upgrade.models import Package, Result
 from tests.conftest import FakeManager
 
 
@@ -60,3 +61,30 @@ def test_get_managers_only():
     managers = get_managers(only={"npm", "gem"})
     keys = {m.key for m in managers}
     assert keys == {"npm", "gem"}
+
+
+def test_package_manager_has_required_class_vars():
+    assert hasattr(PackageManager, "platforms")
+    assert hasattr(PackageManager, "depends_on")
+    assert hasattr(PackageManager, "install_hint")
+
+
+def test_concrete_manager_declares_platforms():
+    class Fake(PackageManager):
+        name = "Fake"
+        key = "fake"
+        icon = "x"
+        platforms = frozenset({"macos"})
+
+        async def is_available(self) -> bool:
+            return True
+
+        async def check_outdated(self) -> list[Package]:
+            return []
+
+        async def upgrade(self, package: Package) -> Result:
+            raise NotImplementedError
+
+    assert Fake.platforms == frozenset({"macos"})
+    assert Fake.depends_on == ()
+    assert Fake.install_hint == ""
