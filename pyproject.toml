@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "mac-upgrade"
-version = "0.1.0"
+version = "0.1.1"
 description = "A beautiful TUI dashboard to upgrade all macOS package managers"
 readme = "README.md"
 license = { text = "MIT" }

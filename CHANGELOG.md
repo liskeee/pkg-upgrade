@@ -1,6 +1,198 @@
 # CHANGELOG
 
 
+## v0.1.1 (2026-04-12)
+
+### Build System
+
+- **deps**: Update textual requirement from >=3.0.0 to >=8.2.3
+  ([#10](https://github.com/liskeee/mac-upgrade/pull/10),
+  [`47bd6de`](https://github.com/liskeee/mac-upgrade/commit/47bd6de5e5e53fe646831a155afa6b4e2a23848c))
+
+Updates the requirements on [textual](https://github.com/Textualize/textual) to permit the latest
+  version. - [Release notes](https://github.com/Textualize/textual/releases) -
+  [Changelog](https://github.com/Textualize/textual/blob/main/CHANGELOG.md) -
+  [Commits](https://github.com/Textualize/textual/compare/v3.0.0...v8.2.3)
+
+--- updated-dependencies: - dependency-name: textual dependency-version: 8.2.3
+
+dependency-type: direct:production ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
+
+- **deps-dev**: Update mypy requirement from >=1.11 to >=1.20.0
+  ([#11](https://github.com/liskeee/mac-upgrade/pull/11),
+  [`00bdc65`](https://github.com/liskeee/mac-upgrade/commit/00bdc65378858c5e14b5a3370a53f330d5e6cfa2))
+
+Updates the requirements on [mypy](https://github.com/python/mypy) to permit the latest version. -
+  [Changelog](https://github.com/python/mypy/blob/master/CHANGELOG.md) -
+  [Commits](https://github.com/python/mypy/compare/v1.11...v1.20.0)
+
+--- updated-dependencies: - dependency-name: mypy dependency-version: 1.20.0
+
+dependency-type: direct:development ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
+
+- **deps-dev**: Update pytest-asyncio requirement
+  ([#7](https://github.com/liskeee/mac-upgrade/pull/7),
+  [`e82d166`](https://github.com/liskeee/mac-upgrade/commit/e82d166ea44fb8b7339ce4b620f17479f36821c8))
+
+Updates the requirements on [pytest-asyncio](https://github.com/pytest-dev/pytest-asyncio) to permit
+  the latest version. - [Release notes](https://github.com/pytest-dev/pytest-asyncio/releases) -
+  [Commits](https://github.com/pytest-dev/pytest-asyncio/compare/v0.25.0...v1.3.0)
+
+--- updated-dependencies: - dependency-name: pytest-asyncio dependency-version: 1.3.0
+
+dependency-type: direct:development ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
+
+- **deps-dev**: Update pytest-cov requirement from >=5.0 to >=7.1.0
+  ([#8](https://github.com/liskeee/mac-upgrade/pull/8),
+  [`f2eb04f`](https://github.com/liskeee/mac-upgrade/commit/f2eb04fdbaffd5b4473676f0035f0c9cb54c71c2))
+
+Updates the requirements on [pytest-cov](https://github.com/pytest-dev/pytest-cov) to permit the
+  latest version. - [Changelog](https://github.com/pytest-dev/pytest-cov/blob/master/CHANGELOG.rst)
+  - [Commits](https://github.com/pytest-dev/pytest-cov/compare/v5.0.0...v7.1.0)
+
+--- updated-dependencies: - dependency-name: pytest-cov dependency-version: 7.1.0
+
+dependency-type: direct:development ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
+
+- **deps-dev**: Update ruff requirement from >=0.6 to >=0.15.10
+  ([#9](https://github.com/liskeee/mac-upgrade/pull/9),
+  [`f627928`](https://github.com/liskeee/mac-upgrade/commit/f62792893b451d8498bed1f87f5fc3b115235154))
+
+Updates the requirements on [ruff](https://github.com/astral-sh/ruff) to permit the latest version.
+  - [Release notes](https://github.com/astral-sh/ruff/releases) -
+  [Changelog](https://github.com/astral-sh/ruff/blob/main/CHANGELOG.md) -
+  [Commits](https://github.com/astral-sh/ruff/compare/0.6.0...0.15.10)
+
+--- updated-dependencies: - dependency-name: ruff dependency-version: 0.15.10
+
+dependency-type: direct:development ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
+
+### Continuous Integration
+
+- Fix brew job with ephemeral tap; allow manual release trigger
+  ([#13](https://github.com/liskeee/mac-upgrade/pull/13),
+  [`be97220`](https://github.com/liskeee/mac-upgrade/commit/be972202cf4ca38d801dc2bc678e75ca66370409))
+
+- brew: install via ephemeral local tap (homebrew rejects raw file paths); skip when formula has
+  REPLACE_WITH_* placeholders - release: add workflow_dispatch with 'force' input (forces patch bump
+  when no releasable commits exist)
+
+- Run release job on ubuntu-latest
+  ([`0c317fe`](https://github.com/liskeee/mac-upgrade/commit/0c317fee58dca2159e4150d7a83e050e2afcb384))
+
+pypa/gh-action-pypi-publish only supports Linux runners.
+
+- **deps**: Bump actions/checkout from 4 to 6 ([#2](https://github.com/liskeee/mac-upgrade/pull/2),
+  [`b2fbecc`](https://github.com/liskeee/mac-upgrade/commit/b2fbeccf32867c34ed1a765344d0628dfb73ebf4))
+
+Bumps [actions/checkout](https://github.com/actions/checkout) from 4 to 6. - [Release
+  notes](https://github.com/actions/checkout/releases) -
+  [Changelog](https://github.com/actions/checkout/blob/main/CHANGELOG.md) -
+  [Commits](https://github.com/actions/checkout/compare/v4...v6)
+
+--- updated-dependencies: - dependency-name: actions/checkout dependency-version: '6'
+
+dependency-type: direct:production
+
+update-type: version-update:semver-major ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
+
+- **deps**: Bump actions/download-artifact from 4 to 8
+  ([#5](https://github.com/liskeee/mac-upgrade/pull/5),
+  [`71efa95`](https://github.com/liskeee/mac-upgrade/commit/71efa95d4a20be06a03ca9938b5285384d0b0a72))
+
+Bumps [actions/download-artifact](https://github.com/actions/download-artifact) from 4 to 8. -
+  [Release notes](https://github.com/actions/download-artifact/releases) -
+  [Commits](https://github.com/actions/download-artifact/compare/v4...v8)
+
+--- updated-dependencies: - dependency-name: actions/download-artifact dependency-version: '8'
+
+dependency-type: direct:production
+
+update-type: version-update:semver-major ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
+
+- **deps**: Bump actions/setup-python from 5 to 6
+  ([#4](https://github.com/liskeee/mac-upgrade/pull/4),
+  [`091b135`](https://github.com/liskeee/mac-upgrade/commit/091b135bf73c4a0977275cab01cb86f2e61b0354))
+
+Bumps [actions/setup-python](https://github.com/actions/setup-python) from 5 to 6. - [Release
+  notes](https://github.com/actions/setup-python/releases) -
+  [Commits](https://github.com/actions/setup-python/compare/v5...v6)
+
+--- updated-dependencies: - dependency-name: actions/setup-python dependency-version: '6'
+
+dependency-type: direct:production
+
+update-type: version-update:semver-major ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
+
+- **deps**: Bump actions/upload-artifact from 4 to 7
+  ([#6](https://github.com/liskeee/mac-upgrade/pull/6),
+  [`e8c63be`](https://github.com/liskeee/mac-upgrade/commit/e8c63be33fc87c2743624155992bc2da319c4445))
+
+Bumps [actions/upload-artifact](https://github.com/actions/upload-artifact) from 4 to 7. - [Release
+  notes](https://github.com/actions/upload-artifact/releases) -
+  [Commits](https://github.com/actions/upload-artifact/compare/v4...v7)
+
+--- updated-dependencies: - dependency-name: actions/upload-artifact dependency-version: '7'
+
+dependency-type: direct:production
+
+update-type: version-update:semver-major ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
+
+- **deps**: Bump peter-evans/create-pull-request from 7 to 8
+  ([#3](https://github.com/liskeee/mac-upgrade/pull/3),
+  [`6d500e5`](https://github.com/liskeee/mac-upgrade/commit/6d500e5673a7b8dd30a87ac6245a928e02305b75))
+
+Bumps [peter-evans/create-pull-request](https://github.com/peter-evans/create-pull-request) from 7
+  to 8. - [Release notes](https://github.com/peter-evans/create-pull-request/releases) -
+  [Commits](https://github.com/peter-evans/create-pull-request/compare/v7...v8)
+
+--- updated-dependencies: - dependency-name: peter-evans/create-pull-request dependency-version: '8'
+
+dependency-type: direct:production
+
+update-type: version-update:semver-major ...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
+Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
+
+
 ## v0.1.0 (2026-04-12)
 
 ### Bug Fixes
