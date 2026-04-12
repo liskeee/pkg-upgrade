@@ -2,8 +2,8 @@ class MacUpgrade < Formula
   include Language::Python::Virtualenv
 
   desc "Beautiful TUI dashboard to upgrade all macOS package managers"
-  homepage "https://github.com/lukaszlis/mac-upgrade"
-  url "https://github.com/lukaszlis/mac-upgrade/archive/refs/tags/v0.1.0.tar.gz"
+  homepage "https://github.com/liskeee/mac-upgrade"
+  url "https://github.com/liskeee/mac-upgrade/archive/refs/tags/v0.1.0.tar.gz"
   # Replace with the sha256 of the tagged release tarball:
   #   curl -L <url> | shasum -a 256
   sha256 "REPLACE_WITH_RELEASE_TARBALL_SHA256"

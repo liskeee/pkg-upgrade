@@ -15,8 +15,8 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/lukaszlis/mac-upgrade"
-Repository = "https://github.com/lukaszlis/mac-upgrade"
+Homepage = "https://github.com/liskeee/mac-upgrade"
+Repository = "https://github.com/liskeee/mac-upgrade"
 
 [project.scripts]
 mac-upgrade = "mac_upgrade.cli:main"

@@ -90,12 +90,12 @@ __version__ = "0.1.0"
 
 - [ ] **Step 3: Install the project in editable mode with dev deps**
 
-Run: `cd /Users/lukaszlis/Projects/Liskeee/mac-upgrade && pip3 install -e ".[dev]"`
+Run: `cd /Users/liskeee/Projects/Liskeee/mac-upgrade && pip3 install -e ".[dev]"`
 Expected: Successful installation.
 
 - [ ] **Step 4: Verify pytest works**
 
-Run: `cd /Users/lukaszlis/Projects/Liskeee/mac-upgrade && python3 -m pytest --version`
+Run: `cd /Users/liskeee/Projects/Liskeee/mac-upgrade && python3 -m pytest --version`
 Expected: Shows pytest version
 
 - [ ] **Step 5: Commit**
@@ -2152,7 +2152,7 @@ class MacUpgradeApp(App):
 
 - [ ] **Step 2: Run the list-only mode to verify it starts**
 
-Run: `cd /Users/lukaszlis/Projects/Liskeee/mac-upgrade && python3 -m mac_upgrade.cli --list`
+Run: `cd /Users/liskeee/Projects/Liskeee/mac-upgrade && python3 -m mac_upgrade.cli --list`
 Expected: App launches, shows all managers, then exits after ~1.5 seconds.
 
 - [ ] **Step 3: Run full test suite**
@@ -2175,7 +2175,7 @@ git commit -m "feat: add main Textual dashboard app"
 
 - [ ] **Step 1: Test dry run**
 
-Run: `cd /Users/lukaszlis/Projects/Liskeee/mac-upgrade && python3 -m mac_upgrade.cli --dry-run --yes`
+Run: `cd /Users/liskeee/Projects/Liskeee/mac-upgrade && python3 -m mac_upgrade.cli --dry-run --yes`
 Expected: App checks all managers, shows outdated packages, skips actual upgrades, then exits cleanly.
 
 - [ ] **Step 2: Test --skip**

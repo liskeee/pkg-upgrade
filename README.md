@@ -19,7 +19,7 @@ A beautiful Textual-based TUI that upgrades every macOS package manager you have
 ### Homebrew (recommended)
 
 ```bash
-brew tap lukaszlis/mac-upgrade https://github.com/lukaszlis/mac-upgrade
+brew tap liskeee/mac-upgrade https://github.com/liskeee/mac-upgrade
 brew install mac-upgrade
 ```
 
@@ -32,7 +32,7 @@ pipx install mac-upgrade
 ### From source
 
 ```bash
-git clone https://github.com/lukaszlis/mac-upgrade
+git clone https://github.com/liskeee/mac-upgrade
 cd mac-upgrade
 pipx install .
 ```
