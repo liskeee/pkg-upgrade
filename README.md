@@ -16,7 +16,24 @@ A beautiful Textual-based TUI that upgrades every macOS package manager you have
 
 ## Installation
 
-### Homebrew (recommended)
+### One-line (recommended)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/liskeee/mac-upgrade/main/install.sh | bash
+```
+
+Pin a specific version:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/liskeee/mac-upgrade/main/install.sh \
+    | MAC_UPGRADE_REF=v0.1.0 bash
+```
+
+The installer uses [pipx](https://pipx.pypa.io/) when available and falls
+back to a self-managed venv at `~/.local/share/mac-upgrade/`. Requires
+Python 3.12+ and macOS.
+
+### Homebrew
 
 ```bash
 brew tap liskeee/mac-upgrade https://github.com/liskeee/mac-upgrade
@@ -26,7 +43,7 @@ brew install mac-upgrade
 ### pipx
 
 ```bash
-pipx install mac-upgrade
+pipx install git+https://github.com/liskeee/mac-upgrade
 ```
 
 ### From source
@@ -35,6 +52,16 @@ pipx install mac-upgrade
 git clone https://github.com/liskeee/mac-upgrade
 cd mac-upgrade
 pipx install .
+```
+
+### Uninstall
+
+```bash
+# installed via pipx (the default path):
+pipx uninstall mac-upgrade
+
+# installed via the venv fallback:
+rm -rf ~/.local/share/mac-upgrade ~/.local/bin/mac-upgrade
 ```
 
 ## Usage

@@ -4,7 +4,8 @@ set -euo pipefail
 
 REPO_URL="https://github.com/liskeee/mac-upgrade"
 REF="${MAC_UPGRADE_REF:-main}"
-SOURCE="git+${REPO_URL}@${REF}"
+# MAC_UPGRADE_SOURCE overrides the pip spec entirely (useful for local/dev installs).
+SOURCE="${MAC_UPGRADE_SOURCE:-git+${REPO_URL}@${REF}}"
 
 log()  { printf '==> %s\n' "$*"; }
 warn() { printf '==> warning: %s\n' "$*" >&2; }
