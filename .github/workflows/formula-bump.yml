@@ -1,0 +1,77 @@
+name: Bump Homebrew Formula
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to bump formula to (e.g. v1.2.0)"
+        required: true
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  bump:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.release.prerelease == false }}
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Resolve tag
+        id: tag
+        run: |
+          TAG="${{ github.event.inputs.tag || github.event.release.tag_name }}"
+          VERSION="${TAG#v}"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Compute release tarball SHA256
+        id: sha
+        run: |
+          URL="https://github.com/${{ github.repository }}/archive/refs/tags/${{ steps.tag.outputs.tag }}.tar.gz"
+          curl -fsSL "$URL" -o release.tar.gz
+          SHA=$(shasum -a 256 release.tar.gz | awk '{print $1}')
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+
+      - name: Update url, sha256, and resources in formula
+        run: |
+          python3 <<'PY'
+          import re, pathlib, os
+          p = pathlib.Path("Formula/mac-upgrade.rb")
+          s = p.read_text()
+          url = os.environ["URL"]
+          sha = os.environ["SHA"]
+          s = re.sub(r'url "https://github\.com/[^"]+"', f'url "{url}"', s, count=1)
+          s = re.sub(r'sha256 "[^"]+"', f'sha256 "{sha}"', s, count=1)
+          p.write_text(s)
+          PY
+        env:
+          URL: ${{ steps.sha.outputs.url }}
+          SHA: ${{ steps.sha.outputs.sha }}
+
+      - name: Refresh Python resources
+        run: |
+          brew update-python-resources Formula/mac-upgrade.rb || true
+
+      - name: Open pull request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: formula-bump/${{ steps.tag.outputs.tag }}
+          commit-message: "chore(formula): bump to ${{ steps.tag.outputs.tag }}"
+          title: "chore(formula): bump to ${{ steps.tag.outputs.tag }}"
+          body: |
+            Automated formula bump for ${{ steps.tag.outputs.tag }}.
+
+            - Updated `url` and `sha256`
+            - Ran `brew update-python-resources`
+
+            Merging will trigger the `brew` CI job which validates `brew install --build-from-source` and `brew test`.
+          labels: formula
+          base: main
