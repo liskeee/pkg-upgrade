@@ -3,6 +3,12 @@ name: Release
 on:
   push:
     branches: [main, dev]
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Force a release even without releasable commits"
+        type: boolean
+        default: false
 
 concurrency:
   group: release-${{ github.ref }}
@@ -37,8 +43,11 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          semantic-release version
-          echo "released=$(semantic-release --noop version --print | grep -q "$(git describe --tags --abbrev=0 2>/dev/null || echo none)" && echo true || echo false)" >> "$GITHUB_OUTPUT"
+          if [ "${{ inputs.force }}" = "true" ]; then
+            semantic-release version --patch
+          else
+            semantic-release version
+          fi
 
       - name: Publish GitHub Release
         env:
