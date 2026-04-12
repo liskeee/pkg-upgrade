@@ -1,6 +1,6 @@
 import json
 
-from mac_upgrade.config import (
+from pkg_upgrade.config import (
     CONFIG_VERSION,
     DEFAULT_CONFIG,
     config_exists,

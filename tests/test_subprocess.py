@@ -2,7 +2,7 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from mac_upgrade._subprocess import run_command
+from pkg_upgrade._subprocess import run_command
 
 
 @pytest.mark.asyncio

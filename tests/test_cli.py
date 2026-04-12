@@ -1,8 +1,8 @@
 import argparse
 from typing import Any
 
-from mac_upgrade.cli import get_log_path, parse_args, resolve_settings
-from mac_upgrade.config import DEFAULT_CONFIG
+from pkg_upgrade.cli import get_log_path, parse_args, resolve_settings
+from pkg_upgrade.config import DEFAULT_CONFIG
 
 
 def test_default_args():

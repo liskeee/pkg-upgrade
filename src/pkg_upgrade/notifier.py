@@ -1,7 +1,7 @@
 from datetime import datetime
 from pathlib import Path
 
-from mac_upgrade._subprocess import run_command
+from pkg_upgrade._subprocess import run_command
 
 
 class Notifier:

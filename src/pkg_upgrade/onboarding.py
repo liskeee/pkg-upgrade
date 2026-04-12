@@ -23,8 +23,8 @@ from textual.widgets import (
     Static,
 )
 
-from mac_upgrade.config import DEFAULT_CONFIG
-from mac_upgrade.managers import ALL_MANAGERS
+from pkg_upgrade.config import DEFAULT_CONFIG
+from pkg_upgrade.managers import ALL_MANAGERS
 
 STEP_IDS = ["step-managers", "step-confirm", "step-notify", "step-log", "step-review"]
 

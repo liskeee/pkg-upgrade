@@ -6,15 +6,15 @@ from typing import Any
 
 from textual.app import App, ComposeResult
 
-from mac_upgrade import __version__
-from mac_upgrade.app import MacUpgradeApp
-from mac_upgrade.config import (
+from pkg_upgrade import __version__
+from pkg_upgrade.app import MacUpgradeApp
+from pkg_upgrade.config import (
     DEFAULT_CONFIG,
     config_exists,
     load_config,
     save_config,
 )
-from mac_upgrade.onboarding import OnboardingScreen
+from pkg_upgrade.onboarding import OnboardingScreen
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:

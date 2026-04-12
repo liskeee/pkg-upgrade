@@ -1,9 +1,9 @@
 import shutil
 
-from mac_upgrade._brew_cache import get_brew_outdated
-from mac_upgrade._subprocess import run_command
-from mac_upgrade.manager import PackageManager
-from mac_upgrade.models import Package, Result
+from pkg_upgrade._brew_cache import get_brew_outdated
+from pkg_upgrade._subprocess import run_command
+from pkg_upgrade.manager import PackageManager
+from pkg_upgrade.models import Package, Result
 
 
 class CaskManager(PackageManager):

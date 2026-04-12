@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# mac-upgrade installer — https://github.com/liskeee/mac-upgrade
+# pkg-upgrade installer — https://github.com/liskeee/pkg-upgrade
 set -euo pipefail
 
-REPO_URL="https://github.com/liskeee/mac-upgrade"
+REPO_URL="https://github.com/liskeee/pkg-upgrade"
 REF="${MAC_UPGRADE_REF:-main}"
 # MAC_UPGRADE_SOURCE overrides the pip spec entirely (useful for local/dev installs).
 SOURCE="${MAC_UPGRADE_SOURCE:-git+${REPO_URL}@${REF}}"
@@ -11,9 +11,9 @@ log()  { printf '==> %s\n' "$*"; }
 warn() { printf '==> warning: %s\n' "$*" >&2; }
 die()  { printf '==> error: %s\n' "$*" >&2; exit 1; }
 
-[[ "$(uname -s)" == "Darwin" ]] || die "mac-upgrade is macOS-only (detected $(uname -s))."
+[[ "$(uname -s)" == "Darwin" ]] || die "pkg-upgrade is macOS-only (detected $(uname -s))."
 
-log "Installing mac-upgrade from ${SOURCE}"
+log "Installing pkg-upgrade from ${SOURCE}"
 
 find_python() {
     local candidate
@@ -37,7 +37,7 @@ try_pipx() {
     command -v pipx >/dev/null 2>&1 || return 1
     log "Installing via pipx..."
     pipx install --force "$SOURCE" || return 1
-    INSTALLED_BIN="$(pipx environment --value PIPX_BIN_DIR)/mac-upgrade"
+    INSTALLED_BIN="$(pipx environment --value PIPX_BIN_DIR)/pkg-upgrade"
     return 0
 }
 
@@ -50,7 +50,7 @@ if ! try_pipx; then
 fi
 
 if [[ -z "$INSTALLED_BIN" ]]; then
-    VENV="$HOME/.local/share/mac-upgrade/venv"
+    VENV="$HOME/.local/share/pkg-upgrade/venv"
     BIN_DIR="$HOME/.local/bin"
 
     cleanup_failed_venv() { rm -rf "$VENV"; }
@@ -62,8 +62,8 @@ if [[ -z "$INSTALLED_BIN" ]]; then
     "$PY" -m venv "$VENV"
     "$VENV/bin/pip" install --quiet --upgrade pip
     "$VENV/bin/pip" install --quiet "$SOURCE"
-    ln -sf "$VENV/bin/mac-upgrade" "$BIN_DIR/mac-upgrade"
-    INSTALLED_BIN="$BIN_DIR/mac-upgrade"
+    ln -sf "$VENV/bin/pkg-upgrade" "$BIN_DIR/pkg-upgrade"
+    INSTALLED_BIN="$BIN_DIR/pkg-upgrade"
 
     trap - ERR
 fi
@@ -80,4 +80,4 @@ esac
 
 VERSION="$("$INSTALLED_BIN" --version)"
 log "✓ Installed ${VERSION}"
-log "Run: mac-upgrade --onboard (first-time setup) or mac-upgrade"
+log "Run: pkg-upgrade --onboard (first-time setup) or pkg-upgrade"

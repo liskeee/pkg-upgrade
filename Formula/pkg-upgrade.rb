@@ -1,9 +1,9 @@
-class MacUpgrade < Formula
+class PkgUpgrade < Formula
   include Language::Python::Virtualenv
 
   desc "Beautiful TUI dashboard to upgrade all macOS package managers"
-  homepage "https://github.com/liskeee/mac-upgrade"
-  url "https://github.com/liskeee/mac-upgrade/archive/refs/tags/v0.1.0.tar.gz"
+  homepage "https://github.com/liskeee/pkg-upgrade"
+  url "https://github.com/liskeee/pkg-upgrade/archive/refs/tags/v0.1.0.tar.gz"
   # Replace with the sha256 of the tagged release tarball:
   #   curl -L <url> | shasum -a 256
   sha256 "REPLACE_WITH_RELEASE_TARBALL_SHA256"
@@ -11,7 +11,7 @@ class MacUpgrade < Formula
 
   depends_on "python@3.12"
 
-  # `brew update-python-resources Formula/mac-upgrade.rb` regenerates these.
+  # `brew update-python-resources Formula/pkg-upgrade.rb` regenerates these.
   resource "textual" do
     url "https://files.pythonhosted.org/packages/source/t/textual/textual-3.0.0.tar.gz"
     sha256 "REPLACE_WITH_TEXTUAL_SDIST_SHA256"
@@ -57,6 +57,6 @@ class MacUpgrade < Formula
   end
 
   test do
-    assert_match "mac-upgrade", shell_output("#{bin}/mac-upgrade --version")
+    assert_match "pkg-upgrade", shell_output("#{bin}/pkg-upgrade --version")
   end
 end

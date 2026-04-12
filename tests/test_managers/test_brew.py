@@ -3,9 +3,9 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from mac_upgrade import _brew_cache
-from mac_upgrade.managers.brew import BrewManager
-from mac_upgrade.models import Package
+from pkg_upgrade import _brew_cache
+from pkg_upgrade.managers.brew import BrewManager
+from pkg_upgrade.models import Package
 
 
 @pytest.fixture(autouse=True)
@@ -38,7 +38,7 @@ async def test_check_outdated_parses_json():
         }
     )
     with patch(
-        "mac_upgrade._brew_cache.run_command", new=AsyncMock(return_value=(0, brew_output, ""))
+        "pkg_upgrade._brew_cache.run_command", new=AsyncMock(return_value=(0, brew_output, ""))
     ):
         packages = await BrewManager().check_outdated()
     assert len(packages) == 2
@@ -48,7 +48,7 @@ async def test_check_outdated_parses_json():
 @pytest.mark.asyncio
 async def test_check_outdated_empty():
     with patch(
-        "mac_upgrade._brew_cache.run_command",
+        "pkg_upgrade._brew_cache.run_command",
         new=AsyncMock(return_value=(0, '{"formulae": []}', "")),
     ):
         assert await BrewManager().check_outdated() == []
@@ -58,7 +58,7 @@ async def test_check_outdated_empty():
 async def test_upgrade_success():
     pkg = Package("node", "22.15", "22.16")
     with patch(
-        "mac_upgrade.managers.brew.run_command", new=AsyncMock(return_value=(0, "Upgraded", ""))
+        "pkg_upgrade.managers.brew.run_command", new=AsyncMock(return_value=(0, "Upgraded", ""))
     ):
         result = await BrewManager().upgrade(pkg)
     assert result.success is True
@@ -68,7 +68,7 @@ async def test_upgrade_success():
 async def test_upgrade_failure():
     pkg = Package("git", "2.44", "2.45")
     with patch(
-        "mac_upgrade.managers.brew.run_command",
+        "pkg_upgrade.managers.brew.run_command",
         new=AsyncMock(return_value=(1, "", "permission denied")),
     ):
         result = await BrewManager().upgrade(pkg)

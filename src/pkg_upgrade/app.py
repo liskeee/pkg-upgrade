@@ -10,12 +10,12 @@ from textual.binding import Binding
 from textual.containers import VerticalScroll
 from textual.widgets import Static
 
-from mac_upgrade.executor import Executor, ManagerState
-from mac_upgrade.managers import get_managers
-from mac_upgrade.models import Result
-from mac_upgrade.notifier import Notifier
-from mac_upgrade.status import ACTIVE_STATUSES, ManagerStatus
-from mac_upgrade.widgets import LiveLogPanel, ManagerCard
+from pkg_upgrade.executor import Executor, ManagerState
+from pkg_upgrade.managers import get_managers
+from pkg_upgrade.models import Result
+from pkg_upgrade.notifier import Notifier
+from pkg_upgrade.status import ACTIVE_STATUSES, ManagerStatus
+from pkg_upgrade.widgets import LiveLogPanel, ManagerCard
 
 
 class AppPhase(StrEnum):

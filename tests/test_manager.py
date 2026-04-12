@@ -1,7 +1,7 @@
 import pytest
 
-from mac_upgrade.managers import ALL_MANAGERS, get_managers
-from mac_upgrade.models import Package
+from pkg_upgrade.managers import ALL_MANAGERS, get_managers
+from pkg_upgrade.models import Package
 from tests.conftest import FakeManager
 
 

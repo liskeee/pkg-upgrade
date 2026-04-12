@@ -4,10 +4,10 @@ import asyncio
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
 
-from mac_upgrade.manager import PackageManager
-from mac_upgrade.managers import ALL_MANAGERS
-from mac_upgrade.models import Package, Result
-from mac_upgrade.status import ManagerStatus
+from pkg_upgrade.manager import PackageManager
+from pkg_upgrade.managers import ALL_MANAGERS
+from pkg_upgrade.models import Package, Result
+from pkg_upgrade.status import ManagerStatus
 
 SEQUENTIAL_CHAIN = ["brew", "cask", "pip"]
 INDEPENDENT = ["npm", "gem", "system"]

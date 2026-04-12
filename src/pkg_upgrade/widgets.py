@@ -8,7 +8,7 @@ from textual.reactive import reactive
 from textual.widget import Widget
 from textual.widgets import Label, RichLog
 
-from mac_upgrade.status import ManagerStatus
+from pkg_upgrade.status import ManagerStatus
 
 
 class ManagerCard(Widget):

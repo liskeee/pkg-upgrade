@@ -1,4 +1,4 @@
-from mac_upgrade.models import Package, Result
+from pkg_upgrade.models import Package, Result
 
 
 def test_package_fields():
