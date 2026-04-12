@@ -1,11 +1,10 @@
 from mac_upgrade.manager import PackageManager
 from mac_upgrade.managers.brew import BrewManager
 from mac_upgrade.managers.cask import CaskManager
-from mac_upgrade.managers.pip import PipManager
-from mac_upgrade.managers.npm import NpmManager
 from mac_upgrade.managers.gem import GemManager
+from mac_upgrade.managers.npm import NpmManager
+from mac_upgrade.managers.pip import PipManager
 from mac_upgrade.managers.system import SystemManager
-
 
 ALL_MANAGERS: list[PackageManager] = [
     BrewManager(),

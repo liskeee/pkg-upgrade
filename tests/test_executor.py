@@ -1,8 +1,7 @@
-import pytest
-from mac_upgrade.executor import Executor, ExecutionGroup
-from mac_upgrade.managers.npm import NpmManager
-from mac_upgrade.managers.gem import GemManager
+from mac_upgrade.executor import ExecutionGroup, Executor
 from mac_upgrade.managers.brew import BrewManager
+from mac_upgrade.managers.gem import GemManager
+from mac_upgrade.managers.npm import NpmManager
 
 
 def test_execution_group_fields():

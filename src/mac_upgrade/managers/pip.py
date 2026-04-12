@@ -15,9 +15,7 @@ class PipManager(PackageManager):
         return shutil.which("pip3") is not None
 
     async def check_outdated(self) -> list[Package]:
-        code, stdout, _ = await run_command(
-            ["pip3", "list", "--outdated", "--format=json"]
-        )
+        code, stdout, _ = await run_command(["pip3", "list", "--outdated", "--format=json"])
         if code != 0 or not stdout.strip():
             return []
         data = json.loads(stdout)
@@ -31,9 +29,7 @@ class PipManager(PackageManager):
         ]
 
     async def upgrade(self, package: Package) -> Result:
-        code, stdout, stderr = await run_command(
-            ["pip3", "install", "--upgrade", package.name]
-        )
+        code, stdout, stderr = await run_command(["pip3", "install", "--upgrade", package.name])
         if code == 0:
             return Result(success=True, message=stdout.strip(), package=package)
         return Result(success=False, message=stderr.strip(), package=package)

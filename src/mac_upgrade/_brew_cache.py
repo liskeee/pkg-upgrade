@@ -1,28 +1,30 @@
 """Shared cache for `brew outdated --json=v2` so brew and cask managers don't double-invoke it."""
+
 from __future__ import annotations
 
 import asyncio
 import json
+from typing import Any
 
 from mac_upgrade._subprocess import run_command
 
-_lock = asyncio.Lock()
-_cache: dict | None = None
+
+class _BrewCache:
+    lock = asyncio.Lock()
+    data: dict[str, Any] | None = None
 
 
-async def get_brew_outdated() -> dict:
-    global _cache
-    async with _lock:
-        if _cache is not None:
-            return _cache
+async def get_brew_outdated() -> dict[str, Any]:
+    async with _BrewCache.lock:
+        if _BrewCache.data is not None:
+            return _BrewCache.data
         code, stdout, stderr = await run_command(["brew", "outdated", "--json=v2"])
         if code != 0:
             raise RuntimeError(f"brew outdated failed: {stderr.strip()}")
-        _cache = json.loads(stdout) if stdout.strip() else {}
-        return _cache
+        _BrewCache.data = json.loads(stdout) if stdout.strip() else {}
+        return _BrewCache.data
 
 
 def reset_cache() -> None:
     """Test helper — clear the cached brew output."""
-    global _cache
-    _cache = None
+    _BrewCache.data = None

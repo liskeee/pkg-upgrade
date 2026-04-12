@@ -1,12 +1,13 @@
 """Persistent user configuration at ~/.mac-upgrade (JSON)."""
+
 from __future__ import annotations
 
+import contextlib
 import json
 import os
 import tempfile
 from pathlib import Path
 from typing import Any, TypedDict
-
 
 CONFIG_VERSION = 1
 
@@ -109,10 +110,8 @@ def save_config(cfg: dict[str, Any], path: Path | None = None) -> None:
         with os.fdopen(fd, "w") as f:
             json.dump(merged, f, indent=2, sort_keys=True)
             f.write("\n")
-        os.replace(tmp_path, p)
+        Path(tmp_path).replace(p)
     except Exception:
-        try:
-            os.unlink(tmp_path)
-        except OSError:
-            pass
+        with contextlib.suppress(OSError):
+            Path(tmp_path).unlink()
         raise

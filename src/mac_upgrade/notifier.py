@@ -5,7 +5,7 @@ from mac_upgrade._subprocess import run_command
 
 
 class Notifier:
-    def __init__(self, log_path: str | None, notify: bool = True):
+    def __init__(self, log_path: str | None, notify: bool = True) -> None:
         self.log_path = log_path
         self.notify = notify
         if self.log_path:
@@ -16,7 +16,7 @@ class Notifier:
             return
         ts = datetime.now().strftime("%H:%M:%S")
         line = f"{ts}  {manager_key:8s}  {message}\n"
-        with open(self.log_path, "a") as f:
+        with Path(self.log_path).open("a") as f:
             f.write(line)
 
     async def send_notification(self, title: str, body: str) -> None:

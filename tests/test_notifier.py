@@ -1,6 +1,8 @@
 import re
+from unittest.mock import AsyncMock, patch
+
 import pytest
-from unittest.mock import patch, AsyncMock
+
 from mac_upgrade.notifier import Notifier
 
 
@@ -37,8 +39,9 @@ def test_log_appends(tmp_path):
 @pytest.mark.asyncio
 async def test_notification_sends():
     n = Notifier(log_path=None, notify=True)
-    with patch("mac_upgrade.notifier.run_command",
-               new=AsyncMock(return_value=(0, "", ""))) as mock_run:
+    with patch(
+        "mac_upgrade.notifier.run_command", new=AsyncMock(return_value=(0, "", ""))
+    ) as mock_run:
         await n.send_notification("title", "body")
         mock_run.assert_called_once()
 
@@ -46,7 +49,8 @@ async def test_notification_sends():
 @pytest.mark.asyncio
 async def test_notification_suppressed():
     n = Notifier(log_path=None, notify=False)
-    with patch("mac_upgrade.notifier.run_command",
-               new=AsyncMock(return_value=(0, "", ""))) as mock_run:
+    with patch(
+        "mac_upgrade.notifier.run_command", new=AsyncMock(return_value=(0, "", ""))
+    ) as mock_run:
         await n.send_notification("title", "body")
         mock_run.assert_not_called()

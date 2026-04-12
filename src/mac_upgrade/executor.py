@@ -82,15 +82,13 @@ class Executor:
                 await on_update(mgr.key, state)
             try:
                 state.outdated = await mgr.check_outdated()
-            except Exception as exc:  # noqa: BLE001 — surfaced to UI
+            except Exception as exc:
                 state.error = str(exc)
                 state.status = ManagerStatus.ERROR
                 if on_update:
                     await on_update(mgr.key, state)
                 return
-            state.status = (
-                ManagerStatus.AWAITING_CONFIRM if state.outdated else ManagerStatus.DONE
-            )
+            state.status = ManagerStatus.AWAITING_CONFIRM if state.outdated else ManagerStatus.DONE
             if on_update:
                 await on_update(mgr.key, state)
 
