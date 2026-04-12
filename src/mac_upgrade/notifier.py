@@ -22,7 +22,8 @@ class Notifier:
     async def send_notification(self, title: str, body: str) -> None:
         if not self.notify:
             return
-        safe_title = title.replace('"', '\\"')
-        safe_body = body.replace('"', '\\"')
+        # AppleScript strings need backslash AND double-quote escaping.
+        safe_title = title.replace("\\", "\\\\").replace('"', '\\"')
+        safe_body = body.replace("\\", "\\\\").replace('"', '\\"')
         script = f'display notification "{safe_body}" with title "{safe_title}"'
         await run_command(["osascript", "-e", script])

@@ -19,6 +19,7 @@ class ManagerState:
     outdated: list[Package] = field(default_factory=list)
     results: list[Result] = field(default_factory=list)
     status: str = "pending"
+    error: str | None = None
 
 
 @dataclass
@@ -79,7 +80,14 @@ class Executor:
             state.status = "checking"
             if on_update:
                 await on_update(mgr.key, state)
-            state.outdated = await mgr.check_outdated()
+            try:
+                state.outdated = await mgr.check_outdated()
+            except Exception as exc:
+                state.error = str(exc)
+                state.status = "error"
+                if on_update:
+                    await on_update(mgr.key, state)
+                return
             state.status = "awaiting_confirm" if state.outdated else "done"
             if on_update:
                 await on_update(mgr.key, state)

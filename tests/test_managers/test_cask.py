@@ -1,8 +1,16 @@
 import json
 import pytest
 from unittest.mock import patch, AsyncMock
+from mac_upgrade import _brew_cache
 from mac_upgrade.managers.cask import CaskManager
 from mac_upgrade.models import Package
+
+
+@pytest.fixture(autouse=True)
+def _reset_brew_cache():
+    _brew_cache.reset_cache()
+    yield
+    _brew_cache.reset_cache()
 
 
 @pytest.mark.asyncio
@@ -15,14 +23,15 @@ async def test_is_available():
 async def test_check_outdated_parses_casks():
     brew_output = json.dumps({
         "casks": [
-            {"name": "firefox", "installed_versions": "130.0", "current_version": "131.0"},
+            {"name": "firefox", "installed_versions": ["130.0"], "current_version": "131.0"},
         ]
     })
-    with patch("mac_upgrade.managers.cask.run_command",
+    with patch("mac_upgrade._brew_cache.run_command",
                new=AsyncMock(return_value=(0, brew_output, ""))):
         packages = await CaskManager().check_outdated()
     assert len(packages) == 1
     assert packages[0].name == "firefox"
+    assert packages[0].current_version == "130.0"
 
 
 @pytest.mark.asyncio

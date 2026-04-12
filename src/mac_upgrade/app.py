@@ -126,6 +126,8 @@ class MacUpgradeApp(App):
                     self._advance_confirm()
             elif state.status == "unavailable":
                 self._log(key, "Not installed — skipping")
+            elif state.status == "error":
+                self._log(key, f"Check failed: {state.error}")
             elif state.status == "done" and not state.outdated:
                 self._log(key, "All packages up to date")
 

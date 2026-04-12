@@ -79,6 +79,9 @@ class ManagerCard(Widget):
         elif self.status == "unavailable":
             status_label.update("⚠️  not installed")
             count_label.update("")
+        elif self.status == "error":
+            status_label.update("❌ check failed")
+            count_label.update("")
 
     def watch_status(self, _value: str) -> None:
         if self.is_mounted:
