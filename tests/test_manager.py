@@ -36,3 +36,28 @@ async def test_upgrade_all():
     results = await mgr.upgrade_all()
     assert len(results) == 2
     assert all(r.success for r in results)
+
+
+from mac_upgrade.managers import ALL_MANAGERS, get_managers
+
+
+def test_all_managers_contains_six():
+    assert len(ALL_MANAGERS) == 6
+
+
+def test_all_managers_keys_unique():
+    keys = [m.key for m in ALL_MANAGERS]
+    assert len(keys) == len(set(keys))
+
+
+def test_get_managers_skip():
+    managers = get_managers(skip={"brew", "pip"})
+    keys = {m.key for m in managers}
+    assert "brew" not in keys and "pip" not in keys
+    assert "npm" in keys
+
+
+def test_get_managers_only():
+    managers = get_managers(only={"npm", "gem"})
+    keys = {m.key for m in managers}
+    assert keys == {"npm", "gem"}
