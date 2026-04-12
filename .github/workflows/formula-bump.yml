@@ -61,7 +61,7 @@ jobs:
           brew update-python-resources Formula/mac-upgrade.rb || true
 
       - name: Open pull request
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v8
         with:
           branch: formula-bump/${{ steps.tag.outputs.tag }}
           commit-message: "chore(formula): bump to ${{ steps.tag.outputs.tag }}"
