@@ -138,7 +138,7 @@ Group 3 (parallel with Group 1): softwareupdate
 
 ### Confirmation Flow
 
-When a manager finishes checking, its card shows the outdated package list and highlights, waiting for `Enter` to confirm or `S` to skip. Multiple managers can be in "awaiting confirmation" state simultaneously if they finish checking at the same time.
+When a manager finishes checking, its card shows the outdated package list and highlights, waiting for `Enter` to confirm or `S` to skip. Multiple managers can be in "awaiting confirmation" state simultaneously if they finish checking at the same time. When `--yes` is passed, confirmation is skipped and upgrades proceed automatically — the card transitions directly from "N updates found" to "upgrading".
 
 ### Summary Screen
 
