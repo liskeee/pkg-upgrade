@@ -4,8 +4,10 @@ from pkg_upgrade._brew_cache import get_brew_outdated
 from pkg_upgrade._subprocess import run_command
 from pkg_upgrade.manager import PackageManager
 from pkg_upgrade.models import Package, Result
+from pkg_upgrade.registry import register_manager
 
 
+@register_manager
 class BrewManager(PackageManager):
     name = "Homebrew Formulas"
     key = "brew"

@@ -4,10 +4,12 @@ import shutil
 from pkg_upgrade._subprocess import run_command
 from pkg_upgrade.manager import PackageManager
 from pkg_upgrade.models import Package, Result
+from pkg_upgrade.registry import register_manager
 
 GEM_LINE_RE = re.compile(r"^(\S+)\s+\((\S+)\s+<\s+(\S+)\)$")
 
 
+@register_manager
 class GemManager(PackageManager):
     name = "gem"
     key = "gem"

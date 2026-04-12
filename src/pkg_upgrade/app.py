@@ -11,9 +11,9 @@ from textual.containers import VerticalScroll
 from textual.widgets import Static
 
 from pkg_upgrade.executor import Executor, ManagerState
-from pkg_upgrade.managers import get_managers
 from pkg_upgrade.models import Result
 from pkg_upgrade.notifier import Notifier
+from pkg_upgrade.registry import discover_managers, select_managers
 from pkg_upgrade.status import ACTIVE_STATUSES, ManagerStatus
 from pkg_upgrade.widgets import LiveLogPanel, ManagerCard
 
@@ -68,7 +68,7 @@ class MacUpgradeApp(App[None]):
         list_only: bool = False,
     ) -> None:
         super().__init__()
-        managers = get_managers(skip=skip, only=only)
+        managers = select_managers(discover_managers(), skip=skip, only=only)
         self.executor = Executor.from_managers(managers)
         self.auto_yes = auto_yes
         self.dry_run = dry_run

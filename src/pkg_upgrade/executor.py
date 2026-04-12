@@ -5,8 +5,8 @@ from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
 
 from pkg_upgrade.manager import PackageManager
-from pkg_upgrade.managers import ALL_MANAGERS
 from pkg_upgrade.models import Package, Result
+from pkg_upgrade.registry import discover_managers
 from pkg_upgrade.status import ManagerStatus
 
 SEQUENTIAL_CHAIN = ["brew", "cask", "pip"]
@@ -41,7 +41,7 @@ class Executor:
 
     @classmethod
     def default(cls) -> Executor:
-        return cls.from_managers(ALL_MANAGERS)
+        return cls.from_managers(discover_managers())
 
     @classmethod
     def from_managers(cls, managers: list[PackageManager]) -> Executor:

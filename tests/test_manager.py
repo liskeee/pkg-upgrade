@@ -1,8 +1,8 @@
 import pytest
 
 from pkg_upgrade.manager import PackageManager
-from pkg_upgrade.managers import ALL_MANAGERS, get_managers
 from pkg_upgrade.models import Package, Result
+from pkg_upgrade.registry import discover_managers, select_managers
 from tests.conftest import FakeManager
 
 
@@ -42,23 +42,29 @@ async def test_upgrade_all():
 
 
 def test_all_managers_contains_six():
-    assert len(ALL_MANAGERS) == 6
+    assert len(discover_managers(load_entry_points=False, load_declarative=False)) == 6
 
 
 def test_all_managers_keys_unique():
-    keys = [m.key for m in ALL_MANAGERS]
+    keys = [m.key for m in discover_managers(load_entry_points=False, load_declarative=False)]
     assert len(keys) == len(set(keys))
 
 
 def test_get_managers_skip():
-    managers = get_managers(skip={"brew", "pip"})
+    managers = select_managers(
+        discover_managers(load_entry_points=False, load_declarative=False),
+        skip={"brew", "pip"},
+    )
     keys = {m.key for m in managers}
     assert "brew" not in keys and "pip" not in keys
     assert "npm" in keys
 
 
 def test_get_managers_only():
-    managers = get_managers(only={"npm", "gem"})
+    managers = select_managers(
+        discover_managers(load_entry_points=False, load_declarative=False),
+        only={"npm", "gem"},
+    )
     keys = {m.key for m in managers}
     assert keys == {"npm", "gem"}
 

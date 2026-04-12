@@ -4,11 +4,13 @@ import shutil
 from pkg_upgrade._subprocess import run_command
 from pkg_upgrade.manager import PackageManager
 from pkg_upgrade.models import Package, Result
+from pkg_upgrade.registry import register_manager
 
 LABEL_RE = re.compile(r"^\* Label:\s+(.+)$")
 VERSION_RE = re.compile(r"^\s+Title:\s+.+,\s+Version:\s+([^,]+),")
 
 
+@register_manager
 class SystemManager(PackageManager):
     name = "System Updates"
     key = "system"
