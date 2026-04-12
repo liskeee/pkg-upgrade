@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 import asyncio
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
-from typing import Awaitable, Callable
 
 from mac_upgrade.manager import PackageManager
 from mac_upgrade.managers import ALL_MANAGERS
 from mac_upgrade.models import Package, Result
-
+from mac_upgrade.status import ManagerStatus
 
 SEQUENTIAL_CHAIN = ["brew", "cask", "pip"]
 INDEPENDENT = ["npm", "gem", "system"]
@@ -18,7 +18,7 @@ class ManagerState:
     manager: PackageManager
     outdated: list[Package] = field(default_factory=list)
     results: list[Result] = field(default_factory=list)
-    status: str = "pending"
+    status: ManagerStatus = ManagerStatus.PENDING
     error: str | None = None
 
 
@@ -33,7 +33,7 @@ OnResult = Callable[[str, Result], Awaitable[None]]
 
 
 class Executor:
-    def __init__(self, groups: list[ExecutionGroup]):
+    def __init__(self, groups: list[ExecutionGroup]) -> None:
         self.groups = groups
         self.states: dict[str, ManagerState] = {
             m.key: ManagerState(manager=m) for m in self.all_managers()
@@ -73,22 +73,24 @@ class Executor:
         async def check_one(mgr: PackageManager) -> None:
             state = self.states[mgr.key]
             if not await mgr.is_available():
-                state.status = "unavailable"
+                state.status = ManagerStatus.UNAVAILABLE
                 if on_update:
                     await on_update(mgr.key, state)
                 return
-            state.status = "checking"
+            state.status = ManagerStatus.CHECKING
             if on_update:
                 await on_update(mgr.key, state)
             try:
                 state.outdated = await mgr.check_outdated()
-            except Exception as exc:
+            except Exception as exc:  # noqa: BLE001 — surfaced to UI
                 state.error = str(exc)
-                state.status = "error"
+                state.status = ManagerStatus.ERROR
                 if on_update:
                     await on_update(mgr.key, state)
                 return
-            state.status = "awaiting_confirm" if state.outdated else "done"
+            state.status = (
+                ManagerStatus.AWAITING_CONFIRM if state.outdated else ManagerStatus.DONE
+            )
             if on_update:
                 await on_update(mgr.key, state)
 
@@ -108,7 +110,7 @@ class Executor:
         on_result: OnResult | None = None,
     ) -> list[Result]:
         state = self.states[key]
-        state.status = "upgrading"
+        state.status = ManagerStatus.UPGRADING
         if on_update:
             await on_update(key, state)
 
@@ -120,10 +122,10 @@ class Executor:
             if on_update:
                 await on_update(key, state)
 
-        state.status = "done"
+        state.status = ManagerStatus.DONE
         if on_update:
             await on_update(key, state)
         return state.results
 
     def skip_manager(self, key: str) -> None:
-        self.states[key].status = "skipped"
+        self.states[key].status = ManagerStatus.SKIPPED

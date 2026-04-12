@@ -1,9 +1,14 @@
+from __future__ import annotations
+
 from datetime import datetime
+from typing import Any
 
 from textual.app import ComposeResult
 from textual.reactive import reactive
 from textual.widget import Widget
 from textual.widgets import Label, RichLog
+
+from mac_upgrade.status import ManagerStatus
 
 
 class ManagerCard(Widget):
@@ -31,12 +36,18 @@ class ManagerCard(Widget):
     }
     """
 
-    status: reactive[str] = reactive("pending")
+    status: reactive[ManagerStatus] = reactive(ManagerStatus.PENDING)
     upgraded: reactive[int] = reactive(0)
     total: reactive[int] = reactive(0)
     failed: reactive[int] = reactive(0)
 
-    def __init__(self, icon: str, manager_name: str, manager_key: str, **kwargs) -> None:
+    def __init__(
+        self,
+        icon: str,
+        manager_name: str,
+        manager_key: str,
+        **kwargs: Any,
+    ) -> None:
         super().__init__(**kwargs)
         self.icon = icon
         self.manager_name = manager_name
@@ -51,39 +62,42 @@ class ManagerCard(Widget):
         status_label = self.query_one("#status-label", Label)
         count_label = self.query_one("#count-label", Label)
 
-        if self.status == "pending":
+        if self.status == ManagerStatus.PENDING:
             status_label.update("⏳ pending")
             count_label.update("")
-        elif self.status == "checking":
+        elif self.status == ManagerStatus.CHECKING:
             status_label.update("🔍 checking...")
             count_label.update("")
-        elif self.status == "awaiting_confirm":
+        elif self.status == ManagerStatus.AWAITING_CONFIRM:
             status_label.update(
-                f"📋 {self.total} update{'s' if self.total != 1 else ''} found — [Enter] confirm / [S] skip"
+                f"📋 {self.total} update{'s' if self.total != 1 else ''} "
+                "found — [Enter] confirm / [S] skip"
             )
             count_label.update("")
-        elif self.status == "upgrading":
+        elif self.status == ManagerStatus.UPGRADING:
             status_label.update("⬆️  upgrading...")
             count_label.update(f"{self.upgraded}/{self.total}")
-        elif self.status == "done":
+        elif self.status == ManagerStatus.DONE:
             if self.failed > 0:
-                status_label.update(f"✅ {self.upgraded} upgraded, ❌ {self.failed} failed")
+                status_label.update(
+                    f"✅ {self.upgraded} upgraded, ❌ {self.failed} failed"
+                )
             elif self.total == 0:
                 status_label.update("━━ no updates")
             else:
                 status_label.update(f"✅ {self.upgraded} upgraded")
             count_label.update("")
-        elif self.status == "skipped":
+        elif self.status == ManagerStatus.SKIPPED:
             status_label.update("⏭  skipped")
             count_label.update("")
-        elif self.status == "unavailable":
+        elif self.status == ManagerStatus.UNAVAILABLE:
             status_label.update("⚠️  not installed")
             count_label.update("")
-        elif self.status == "error":
+        elif self.status == ManagerStatus.ERROR:
             status_label.update("❌ check failed")
             count_label.update("")
 
-    def watch_status(self, _value: str) -> None:
+    def watch_status(self, _value: ManagerStatus) -> None:
         if self.is_mounted:
             self._refresh_labels()
 

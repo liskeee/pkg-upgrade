@@ -37,7 +37,3 @@ class PipManager(PackageManager):
         if code == 0:
             return Result(success=True, message=stdout.strip(), package=package)
         return Result(success=False, message=stderr.strip(), package=package)
-
-    async def upgrade_all(self) -> list[Result]:
-        packages = await self.check_outdated()
-        return [await self.upgrade(p) for p in packages]

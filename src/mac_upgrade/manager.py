@@ -1,12 +1,17 @@
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
+from typing import ClassVar
 
 from mac_upgrade.models import Package, Result
 
 
 class PackageManager(ABC):
-    name: str
-    key: str
-    icon: str
+    """Abstract strategy for a single package-manager backend."""
+
+    name: ClassVar[str]
+    key: ClassVar[str]
+    icon: ClassVar[str]
 
     @abstractmethod
     async def is_available(self) -> bool: ...
@@ -17,5 +22,7 @@ class PackageManager(ABC):
     @abstractmethod
     async def upgrade(self, package: Package) -> Result: ...
 
-    @abstractmethod
-    async def upgrade_all(self) -> list[Result]: ...
+    async def upgrade_all(self) -> list[Result]:
+        """Default: check then upgrade each package sequentially."""
+        packages = await self.check_outdated()
+        return [await self.upgrade(p) for p in packages]

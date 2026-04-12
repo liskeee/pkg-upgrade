@@ -5,10 +5,25 @@ import json
 import os
 import tempfile
 from pathlib import Path
-from typing import Any
+from typing import Any, TypedDict
 
 
 CONFIG_VERSION = 1
+
+
+class UserConfig(TypedDict, total=False):
+    """Shape of the persisted ``~/.mac-upgrade`` JSON file.
+
+    All keys are optional on disk; missing keys fall back to ``DEFAULT_CONFIG``.
+    """
+
+    version: int
+    managers: list[str]
+    auto_yes: bool
+    notify: bool
+    log: bool
+    log_dir: str
+
 
 DEFAULT_CONFIG: dict[str, Any] = {
     "version": CONFIG_VERSION,

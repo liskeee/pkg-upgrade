@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import time
 from datetime import date
+from enum import StrEnum
 
 from textual.app import App, ComposeResult
 from textual.binding import Binding
@@ -12,10 +13,17 @@ from mac_upgrade.executor import Executor, ManagerState
 from mac_upgrade.managers import get_managers
 from mac_upgrade.models import Result
 from mac_upgrade.notifier import Notifier
+from mac_upgrade.status import ACTIVE_STATUSES, ManagerStatus
 from mac_upgrade.widgets import LiveLogPanel, ManagerCard
 
 
-class MacUpgradeApp(App):
+class AppPhase(StrEnum):
+    CHECKING = "checking"
+    CONFIRMING = "confirming"
+    SUMMARY = "summary"
+
+
+class MacUpgradeApp(App[None]):
     """TUI dashboard for upgrading macOS packages."""
 
     TITLE = "mac-upgrade"
@@ -57,9 +65,8 @@ class MacUpgradeApp(App):
         notify: bool = True,
         log_path: str | None = None,
         list_only: bool = False,
-        **kwargs,
     ) -> None:
-        super().__init__(**kwargs)
+        super().__init__()
         managers = get_managers(skip=skip, only=only)
         self.executor = Executor.from_managers(managers)
         self.auto_yes = auto_yes
@@ -70,11 +77,14 @@ class MacUpgradeApp(App):
         self._confirm_queue: list[str] = []
         self._current_confirm: str | None = None
         self._start_time: float = 0.0
-        self._phase = "checking"
+        self._phase: AppPhase = AppPhase.CHECKING
 
     def compose(self) -> ComposeResult:
         today = date.today().strftime("%d %b %Y")
-        yield Static(f"🚀 mac-upgrade                                           {today}", id="header-bar")
+        yield Static(
+            f"🚀 mac-upgrade                                           {today}",
+            id="header-bar",
+        )
         with VerticalScroll(id="managers-container"):
             for mgr in self.executor.all_managers():
                 card = ManagerCard(
@@ -98,7 +108,9 @@ class MacUpgradeApp(App):
     async def _list_and_exit(self) -> None:
         for mgr in self.executor.all_managers():
             available = await mgr.is_available()
-            self.cards[mgr.key].status = "done" if available else "unavailable"
+            self.cards[mgr.key].status = (
+                ManagerStatus.DONE if available else ManagerStatus.UNAVAILABLE
+            )
             self._log(mgr.key, "Available" if available else "Not installed")
         self.set_timer(1.5, self.exit)
 
@@ -107,16 +119,19 @@ class MacUpgradeApp(App):
             card = self.cards[key]
             card.total = len(state.outdated)
             card.status = state.status
-            if state.status == "checking":
+            if state.status == ManagerStatus.CHECKING:
                 self._log(key, "Checking for updates...")
-            elif state.status == "awaiting_confirm":
+            elif state.status == ManagerStatus.AWAITING_CONFIRM:
                 count = len(state.outdated)
-                self._log(key, f"Found {count} outdated package{'s' if count != 1 else ''}")
+                self._log(
+                    key,
+                    f"Found {count} outdated package{'s' if count != 1 else ''}",
+                )
                 for pkg in state.outdated:
                     self._log(key, f"  {pkg}")
                 if self.dry_run:
                     self.executor.skip_manager(key)
-                    card.status = "done"
+                    card.status = ManagerStatus.DONE
                     self._log(key, "Dry run — no changes made")
                     await self._maybe_finish()
                 elif self.auto_yes:
@@ -124,15 +139,15 @@ class MacUpgradeApp(App):
                 else:
                     self._confirm_queue.append(key)
                     self._advance_confirm()
-            elif state.status == "unavailable":
+            elif state.status == ManagerStatus.UNAVAILABLE:
                 self._log(key, "Not installed — skipping")
-            elif state.status == "error":
+            elif state.status == ManagerStatus.ERROR:
                 self._log(key, f"Check failed: {state.error}")
-            elif state.status == "done" and not state.outdated:
+            elif state.status == ManagerStatus.DONE and not state.outdated:
                 self._log(key, "All packages up to date")
 
         await self.executor.check_all(on_update=on_update)
-        self._phase = "confirming"
+        self._phase = AppPhase.CONFIRMING
         await self._maybe_finish()
 
     def _advance_confirm(self) -> None:
@@ -160,7 +175,9 @@ class MacUpgradeApp(App):
 
         self._log(key, "Starting upgrades...")
         await self.executor.upgrade_manager(
-            key, on_update=on_update, on_result=on_result,
+            key,
+            on_update=on_update,
+            on_result=on_result,
         )
         await self._maybe_finish()
 
@@ -179,7 +196,7 @@ class MacUpgradeApp(App):
         key = self._current_confirm
         self.executor.skip_manager(key)
         self.cards[key].remove_class("-highlight")
-        self.cards[key].status = "skipped"
+        self.cards[key].status = ManagerStatus.SKIPPED
         self._log(key, "Skipped by user")
         self._current_confirm = None
         self._advance_confirm()
@@ -192,20 +209,19 @@ class MacUpgradeApp(App):
         self.exit()
 
     async def _maybe_finish(self) -> None:
-        active_statuses = {"pending", "checking", "awaiting_confirm", "upgrading"}
         if self._current_confirm is not None:
             return
         if self._confirm_queue:
             return
         for state in self.executor.states.values():
-            if state.status in active_statuses:
+            if state.status in ACTIVE_STATUSES:
                 return
         await self._finish()
 
     async def _finish(self) -> None:
-        if self._phase == "summary":
+        if self._phase == AppPhase.SUMMARY:
             return
-        self._phase = "summary"
+        self._phase = AppPhase.SUMMARY
 
         elapsed = time.monotonic() - self._start_time
         minutes = int(elapsed) // 60
@@ -220,7 +236,7 @@ class MacUpgradeApp(App):
             1 for s in self.executor.states.values() for r in s.results if not r.success
         )
         total_skipped = sum(
-            1 for s in self.executor.states.values() if s.status == "skipped"
+            1 for s in self.executor.states.values() if s.status == ManagerStatus.SKIPPED
         )
 
         summary = f"{total_upgraded} upgraded"
