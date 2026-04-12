@@ -1,6 +1,7 @@
-from types import SimpleNamespace
+import argparse
+from typing import Any
 
-from mac_upgrade.cli import parse_args, get_log_path, resolve_settings
+from mac_upgrade.cli import get_log_path, parse_args, resolve_settings
 from mac_upgrade.config import DEFAULT_CONFIG
 
 
@@ -72,14 +73,21 @@ def test_get_log_path_expands_tilde(tmp_path, monkeypatch):
 
 # --- resolve_settings ---
 
-def _args(**overrides):
-    base = dict(
-        skip=None, only=None, yes=False, dry_run=False,
-        no_notify=False, no_log=False, log_dir=None,
-        list_managers=False, onboard=False,
-    )
+
+def _args(**overrides: Any) -> argparse.Namespace:
+    base = {
+        "skip": None,
+        "only": None,
+        "yes": False,
+        "dry_run": False,
+        "no_notify": False,
+        "no_log": False,
+        "log_dir": None,
+        "list_managers": False,
+        "onboard": False,
+    }
     base.update(overrides)
-    return SimpleNamespace(**base)
+    return argparse.Namespace(**base)
 
 
 def test_resolve_uses_config_defaults():

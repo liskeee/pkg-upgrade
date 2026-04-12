@@ -1,8 +1,10 @@
 """Textual onboarding wizard that produces a config dict."""
+
 from __future__ import annotations
 
 import asyncio
-from typing import Any
+import json
+from typing import Any, ClassVar
 
 from textual.app import ComposeResult
 from textual.binding import Binding
@@ -24,11 +26,10 @@ from textual.widgets import (
 from mac_upgrade.config import DEFAULT_CONFIG
 from mac_upgrade.managers import ALL_MANAGERS
 
-
 STEP_IDS = ["step-managers", "step-confirm", "step-notify", "step-log", "step-review"]
 
 
-class OnboardingScreen(Screen):
+class OnboardingScreen(Screen[dict[str, Any] | None]):
     """Wizard screen. Call with `push_screen_wait(OnboardingScreen(...))` —
     dismisses with the saved config dict, or None if cancelled."""
 
@@ -74,7 +75,7 @@ class OnboardingScreen(Screen):
     }
     """
 
-    BINDINGS = [
+    BINDINGS: ClassVar = [
         Binding("q", "cancel", "Cancel", show=True),
     ]
 
@@ -142,16 +143,15 @@ class OnboardingScreen(Screen):
         )
         self._available = {
             m.key: (bool(r) if not isinstance(r, Exception) else False)
-            for m, r in zip(ALL_MANAGERS, results)
+            for m, r in zip(ALL_MANAGERS, results, strict=True)
         }
         container = self.query_one("#manager-checks", Vertical)
         await container.remove_children()
         saved = set(self._cfg.get("managers") or [])
         for m in ALL_MANAGERS:
             available = self._available[m.key]
-            label = (
-                f"{m.icon} {m.name}  "
-                + ("[dim]✓ installed[/dim]" if available else "[red]✗ not found[/red]")
+            label = f"{m.icon} {m.name}  " + (
+                "[dim]✓ installed[/dim]" if available else "[red]✗ not found[/red]"
             )
             cb = Checkbox(
                 label,
@@ -198,7 +198,6 @@ class OnboardingScreen(Screen):
         self._cfg["log_dir"] = self.query_one("#log-dir-input", Input).value or "~/"
 
     def _render_review(self) -> None:
-        import json
         self.query_one("#review-json", Static).update(
             json.dumps(self._cfg, indent=2, sort_keys=True)
         )

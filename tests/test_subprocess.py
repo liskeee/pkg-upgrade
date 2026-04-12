@@ -1,5 +1,7 @@
-import pytest
 from unittest.mock import AsyncMock, patch
+
+import pytest
+
 from mac_upgrade._subprocess import run_command
 
 
@@ -24,7 +26,7 @@ async def test_run_command_failure():
     mock_proc.returncode = 1
 
     with patch("asyncio.create_subprocess_exec", return_value=mock_proc):
-        code, stdout, stderr = await run_command(["false"])
+        code, _stdout, stderr = await run_command(["false"])
 
     assert code == 1
     assert stderr == "error"

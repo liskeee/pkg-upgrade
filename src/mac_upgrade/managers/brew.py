@@ -20,11 +20,13 @@ class BrewManager(PackageManager):
         for f in data.get("formulae", []):
             installed = f.get("installed_versions") or []
             current = installed[0] if installed else "unknown"
-            packages.append(Package(
-                name=f["name"],
-                current_version=current,
-                latest_version=f["current_version"],
-            ))
+            packages.append(
+                Package(
+                    name=f["name"],
+                    current_version=current,
+                    latest_version=f["current_version"],
+                )
+            )
         return packages
 
     async def upgrade(self, package: Package) -> Result:

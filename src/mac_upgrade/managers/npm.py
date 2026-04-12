@@ -16,9 +16,7 @@ class NpmManager(PackageManager):
 
     async def check_outdated(self) -> list[Package]:
         # npm outdated exits 1 when there are outdated packages — ignore exit code
-        _, stdout, _ = await run_command(
-            ["npm", "outdated", "--global", "--json"]
-        )
+        _, stdout, _ = await run_command(["npm", "outdated", "--global", "--json"])
         if not stdout.strip():
             return []
         data = json.loads(stdout)
@@ -32,9 +30,7 @@ class NpmManager(PackageManager):
         ]
 
     async def upgrade(self, package: Package) -> Result:
-        code, stdout, stderr = await run_command(
-            ["npm", "install", "-g", f"{package.name}@latest"]
-        )
+        code, stdout, stderr = await run_command(["npm", "install", "-g", f"{package.name}@latest"])
         if code == 0:
             return Result(success=True, message=stdout.strip(), package=package)
         return Result(success=False, message=stderr.strip(), package=package)

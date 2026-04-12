@@ -1,13 +1,11 @@
 import json
 
-import pytest
-
 from mac_upgrade.config import (
     CONFIG_VERSION,
     DEFAULT_CONFIG,
+    config_exists,
     load_config,
     save_config,
-    config_exists,
 )
 
 
@@ -62,15 +60,19 @@ def test_roundtrip(tmp_path):
 
 def test_save_preserves_unknown_keys(tmp_path):
     p = tmp_path / ".mac-upgrade"
-    p.write_text(json.dumps({
-        "version": CONFIG_VERSION,
-        "managers": ["brew"],
-        "auto_yes": False,
-        "notify": True,
-        "log": True,
-        "log_dir": "~/",
-        "future_feature": {"hello": "world"},
-    }))
+    p.write_text(
+        json.dumps(
+            {
+                "version": CONFIG_VERSION,
+                "managers": ["brew"],
+                "auto_yes": False,
+                "notify": True,
+                "log": True,
+                "log_dir": "~/",
+                "future_feature": {"hello": "world"},
+            }
+        )
+    )
     save_config({"auto_yes": True}, p)
     reloaded = json.loads(p.read_text())
     assert reloaded["future_feature"] == {"hello": "world"}
@@ -79,10 +81,14 @@ def test_save_preserves_unknown_keys(tmp_path):
 
 def test_save_filters_unknown_managers_on_load(tmp_path):
     p = tmp_path / ".mac-upgrade"
-    p.write_text(json.dumps({
-        "version": CONFIG_VERSION,
-        "managers": ["brew", "mystery-manager", "npm"],
-    }))
+    p.write_text(
+        json.dumps(
+            {
+                "version": CONFIG_VERSION,
+                "managers": ["brew", "mystery-manager", "npm"],
+            }
+        )
+    )
     cfg, _ = load_config(p)
     assert "mystery-manager" not in cfg["managers"]
     assert "brew" in cfg["managers"]

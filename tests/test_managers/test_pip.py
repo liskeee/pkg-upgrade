@@ -1,6 +1,8 @@
 import json
+from unittest.mock import AsyncMock, patch
+
 import pytest
-from unittest.mock import patch, AsyncMock
+
 from mac_upgrade.managers.pip import PipManager
 from mac_upgrade.models import Package
 
@@ -13,11 +15,14 @@ async def test_is_available():
 
 @pytest.mark.asyncio
 async def test_check_outdated_parses_json():
-    pip_output = json.dumps([
-        {"name": "requests", "version": "2.31.0", "latest_version": "2.32.0"},
-    ])
-    with patch("mac_upgrade.managers.pip.run_command",
-               new=AsyncMock(return_value=(0, pip_output, ""))):
+    pip_output = json.dumps(
+        [
+            {"name": "requests", "version": "2.31.0", "latest_version": "2.32.0"},
+        ]
+    )
+    with patch(
+        "mac_upgrade.managers.pip.run_command", new=AsyncMock(return_value=(0, pip_output, ""))
+    ):
         packages = await PipManager().check_outdated()
     assert len(packages) == 1
     assert packages[0].name == "requests"
@@ -26,7 +31,8 @@ async def test_check_outdated_parses_json():
 @pytest.mark.asyncio
 async def test_upgrade_success():
     pkg = Package("requests", "2.31.0", "2.32.0")
-    with patch("mac_upgrade.managers.pip.run_command",
-               new=AsyncMock(return_value=(0, "Installed", ""))):
+    with patch(
+        "mac_upgrade.managers.pip.run_command", new=AsyncMock(return_value=(0, "Installed", ""))
+    ):
         result = await PipManager().upgrade(pkg)
     assert result.success is True

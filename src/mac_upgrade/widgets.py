@@ -79,9 +79,7 @@ class ManagerCard(Widget):
             count_label.update(f"{self.upgraded}/{self.total}")
         elif self.status == ManagerStatus.DONE:
             if self.failed > 0:
-                status_label.update(
-                    f"✅ {self.upgraded} upgraded, ❌ {self.failed} failed"
-                )
+                status_label.update(f"✅ {self.upgraded} upgraded, ❌ {self.failed} failed")
             elif self.total == 0:
                 status_label.update("━━ no updates")
             else:

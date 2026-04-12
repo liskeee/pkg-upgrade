@@ -10,16 +10,16 @@ repos:
       - id: check-added-large-files
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.6.9
+    rev: v0.15.10
     hooks:
       - id: ruff
         args: [--fix]
       - id: ruff-format
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.11.2
+    rev: v1.20.0
     hooks:
       - id: mypy
-        additional_dependencies: [textual>=3.0.0]
+        additional_dependencies: [textual>=3.0.0, pytest>=8.0, pytest-asyncio>=0.24]
         args: [--config-file=pyproject.toml]
         pass_filenames: false

@@ -4,13 +4,17 @@ from datetime import date
 from pathlib import Path
 from typing import Any
 
+from textual.app import App, ComposeResult
+
 from mac_upgrade import __version__
+from mac_upgrade.app import MacUpgradeApp
 from mac_upgrade.config import (
     DEFAULT_CONFIG,
     config_exists,
     load_config,
     save_config,
 )
+from mac_upgrade.onboarding import OnboardingScreen
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
@@ -18,8 +22,12 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         prog="mac-upgrade",
         description="Upgrade all macOS package managers with a beautiful TUI dashboard",
     )
-    parser.add_argument("--skip", type=lambda s: set(s.split(",")), default=None, metavar="MANAGERS")
-    parser.add_argument("--only", type=lambda s: set(s.split(",")), default=None, metavar="MANAGERS")
+    parser.add_argument(
+        "--skip", type=lambda s: set(s.split(",")), default=None, metavar="MANAGERS"
+    )
+    parser.add_argument(
+        "--only", type=lambda s: set(s.split(",")), default=None, metavar="MANAGERS"
+    )
     parser.add_argument("--yes", "-y", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--no-notify", action="store_true")
@@ -43,16 +51,11 @@ def get_log_path(log_enabled: bool, log_dir: str | None) -> str | None:
     return str(base / f"mac-upgrade-{today}.log")
 
 
-def resolve_settings(
-    args: argparse.Namespace, cfg: dict[str, Any]
-) -> dict[str, Any]:
+def resolve_settings(args: argparse.Namespace, cfg: dict[str, Any]) -> dict[str, Any]:
     """Merge CLI flags with config — flags always win."""
     cfg_managers = set(cfg.get("managers") or DEFAULT_CONFIG["managers"])
 
-    if args.only is not None:
-        effective = cfg_managers & args.only
-    else:
-        effective = set(cfg_managers)
+    effective = cfg_managers & args.only if args.only is not None else set(cfg_managers)
     if args.skip:
         effective -= args.skip
 
@@ -75,13 +78,9 @@ def resolve_settings(
 
 def _run_onboarding_wizard(initial: dict[str, Any]) -> dict[str, Any] | None:
     """Launch the Textual onboarding screen. Returns saved config or None."""
-    from textual.app import App, ComposeResult
-
-    from mac_upgrade.onboarding import OnboardingScreen
-
     result: dict[str, Any] | None = None
 
-    class WizardApp(App):
+    class WizardApp(App[None]):
         def compose(self) -> ComposeResult:
             return []
 
@@ -125,8 +124,6 @@ def main() -> None:
         print(f"warning: {warning}", file=sys.stderr)
 
     settings = resolve_settings(args, cfg)
-
-    from mac_upgrade.app import MacUpgradeApp
 
     app = MacUpgradeApp(
         skip=settings["skip"],

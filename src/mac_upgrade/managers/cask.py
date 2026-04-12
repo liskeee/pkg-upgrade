@@ -20,17 +20,17 @@ class CaskManager(PackageManager):
         for c in data.get("casks", []):
             installed = c.get("installed_versions") or []
             current = installed[0] if isinstance(installed, list) and installed else "unknown"
-            packages.append(Package(
-                name=c["name"],
-                current_version=current,
-                latest_version=c["current_version"],
-            ))
+            packages.append(
+                Package(
+                    name=c["name"],
+                    current_version=current,
+                    latest_version=c["current_version"],
+                )
+            )
         return packages
 
     async def upgrade(self, package: Package) -> Result:
-        code, stdout, stderr = await run_command(
-            ["brew", "upgrade", "--cask", package.name]
-        )
+        code, stdout, stderr = await run_command(["brew", "upgrade", "--cask", package.name])
         if code == 0:
             return Result(success=True, message=stdout.strip(), package=package)
         return Result(success=False, message=stderr.strip(), package=package)

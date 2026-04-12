@@ -5,7 +5,6 @@ from mac_upgrade._subprocess import run_command
 from mac_upgrade.manager import PackageManager
 from mac_upgrade.models import Package, Result
 
-
 GEM_LINE_RE = re.compile(r"^(\S+)\s+\((\S+)\s+<\s+(\S+)\)$")
 
 
@@ -25,11 +24,13 @@ class GemManager(PackageManager):
         for line in stdout.splitlines():
             m = GEM_LINE_RE.match(line.strip())
             if m:
-                packages.append(Package(
-                    name=m.group(1),
-                    current_version=m.group(2),
-                    latest_version=m.group(3),
-                ))
+                packages.append(
+                    Package(
+                        name=m.group(1),
+                        current_version=m.group(2),
+                        latest_version=m.group(3),
+                    )
+                )
         return packages
 
     async def upgrade(self, package: Package) -> Result:
