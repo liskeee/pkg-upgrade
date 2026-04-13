@@ -1,0 +1,13 @@
+name: Pacman
+key: pacman
+icon: "🏛️"
+platforms: [linux]
+install_hint: "Ships with Arch Linux and derivatives."
+requires_sudo: true
+
+check:
+  cmd: [pacman, -Qu]
+  parser: pacman_qu
+
+upgrade:
+  cmd: [sudo, pacman, -S, --noconfirm, "{name}"]

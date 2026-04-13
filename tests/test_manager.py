@@ -42,6 +42,7 @@ async def test_upgrade_all():
 
 
 def test_all_managers_contains_six():
+    # 6 built-in managers: brew, cask, pip, npm, gem, system
     assert len(discover_managers(load_entry_points=False, load_declarative=False)) == 6
 
 

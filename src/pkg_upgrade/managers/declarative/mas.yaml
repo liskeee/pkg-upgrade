@@ -1,0 +1,12 @@
+name: Mac App Store
+key: mas
+icon: "🛍️"
+platforms: [macos]
+install_hint: "brew install mas"
+
+check:
+  cmd: [mas, outdated]
+  parser: mas_outdated
+
+upgrade:
+  cmd: [mas, upgrade, "{name}"]

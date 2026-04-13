@@ -1,0 +1,13 @@
+name: Chocolatey
+key: choco
+icon: "🍫"
+platforms: [windows]
+install_hint: "See https://chocolatey.org/install. Must run as Administrator."
+requires_admin: true
+
+check:
+  cmd: [choco, outdated, --limit-output]
+  parser: choco_outdated
+
+upgrade:
+  cmd: [choco, upgrade, "{name}", -y]

@@ -37,7 +37,8 @@ def test_executor_subset_only_chain():
 
 def test_all_managers_flattens_groups():
     executor = Executor.default()
-    assert len(executor.all_managers()) == 6
+    # 6 built-in managers (brew, cask, pip, npm, gem, system) + 1 declarative (mas on macOS)
+    assert len(executor.all_managers()) >= 6
 
 
 def _mk(
