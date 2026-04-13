@@ -396,18 +396,21 @@ class RichDashboardUI:
             upgrade_task = asyncio.create_task(self._auto_upgrade(executor))
 
         aborted = False
+        # One persistent key-read task. Thread-pool readkey() can't be
+        # cancelled mid-read, so we never cancel it — we only await it
+        # opportunistically and spawn the next one after it completes.
+        key_task: asyncio.Task[str | None] = asyncio.create_task(self._read_key_soft())
+
         with Live(
             build_running_frame(),
             refresh_per_second=8,
             transient=False,
         ) as live:
-            # Main loop: tick the spinner, race key reads against ticks.
             while True:
                 model = self._build_model(executor)
                 if model.all_done() and (upgrade_task is None or upgrade_task.done()):
                     break
 
-                key_task = asyncio.create_task(self._read_key_soft())
                 sleep_task: asyncio.Task[Any] = asyncio.create_task(asyncio.sleep(0.125))
                 pending_tasks: list[asyncio.Task[Any]] = [key_task, sleep_task]
                 if upgrade_task is not None:
@@ -424,8 +427,7 @@ class RichDashboardUI:
                         if result is None:
                             aborted = True
                             break
-                else:
-                    key_task.cancel()
+                    key_task = asyncio.create_task(self._read_key_soft())
 
                 if sleep_task not in done_tasks:
                     sleep_task.cancel()
@@ -438,13 +440,16 @@ class RichDashboardUI:
                 with contextlib.suppress(asyncio.CancelledError, Exception):
                     await upgrade_task
 
-            # Final summary — keep Live open until user presses a key.
             if not aborted:
                 final_model = self._build_model(executor)
                 live.update(
                     build_summary_frame(final_model, self._glyphs, elapsed_seconds=elapsed())
                 )
-                await self._read_key_soft()
+                # Reuse the running key task (already waiting on stdin) so we
+                # don't leak a second blocked thread.
+                if key_task.done():
+                    key_task = asyncio.create_task(self._read_key_soft())
+                await key_task
 
     async def _auto_upgrade(self, executor: Any) -> None:
         # Keep auto-confirming any manager that reaches AWAITING_CONFIRM.
