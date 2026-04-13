@@ -227,7 +227,7 @@ class RichDashboardUI:
                 model = self._build_model(executor)
         return model
 
-    async def run(self, executor: Any, *, auto_yes: bool, dry_run: bool) -> None:
+    async def run(self, executor: Any, *, auto_yes: bool, dry_run: bool) -> None:  # noqa: PLR0912
         await executor.check_all()
 
         if dry_run:
