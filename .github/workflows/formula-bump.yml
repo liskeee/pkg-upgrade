@@ -44,7 +44,7 @@ jobs:
         run: |
           python3 <<'PY'
           import re, pathlib, os
-          p = pathlib.Path("Formula/mac-upgrade.rb")
+          p = pathlib.Path("Formula/pkg-upgrade.rb")
           s = p.read_text()
           url = os.environ["URL"]
           sha = os.environ["SHA"]
@@ -58,7 +58,7 @@ jobs:
 
       - name: Refresh Python resources
         run: |
-          brew update-python-resources Formula/mac-upgrade.rb || true
+          brew update-python-resources Formula/pkg-upgrade.rb || true
 
       - name: Open pull request
         uses: peter-evans/create-pull-request@v8
