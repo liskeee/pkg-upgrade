@@ -27,3 +27,11 @@ def test_install_ps1_appends_to_profile_idempotently():
     assert "pkg-upgrade.ps1" in text
     assert "$PROFILE" in text
     assert "Select-String" in text or "-notmatch" in text
+
+
+def test_install_sh_handles_bash_zsh_fish():
+    text = (ROOT / "install.sh").read_text(encoding="utf-8")
+    assert "bash-completion/completions/pkg-upgrade" in text
+    assert ".zsh/completions/_pkg-upgrade" in text
+    assert "fish/completions/pkg-upgrade.fish" in text
+    assert "fpath+=" in text or "fpath=(" in text
