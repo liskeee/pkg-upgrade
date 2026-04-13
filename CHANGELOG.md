@@ -1,6 +1,53 @@
 # CHANGELOG
 
 
+## v1.4.0 (2026-04-13)
+
+### Features
+
+- **ui**: Rewrite TUI with rich+readchar, drop Textual
+  ([#24](https://github.com/liskeee/pkg-upgrade/pull/24),
+  [`4c9f7f1`](https://github.com/liskeee/pkg-upgrade/commit/4c9f7f1d0f33e53884cf2957eff9fc7f91e144b5))
+
+* docs: add terminal UI rewrite implementation plan
+
+* build(deps): swap textual for rich+readchar
+
+* feat(ui): add key input normalization layer
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+* feat(ui): add unicode/ascii glyph tables
+
+* feat(ui): add UIModel render state
+
+* feat(ui): add DashboardUI/OnboardingUI protocols + factory
+
+* feat(ui): add PlainDashboardUI for non-TTY
+
+* feat(ui): add rich dashboard frame renderer with snapshot tests
+
+* feat(ui): add RichDashboardUI event loop with keybindings
+
+* feat(ui): add RichOnboardingUI linear 5-step wizard
+
+* feat(ui): wire rich UIs into cli; remove Textual app
+
+* docs: update README for rich terminal UI
+
+* fix(ci): utf-8 golden reads on Windows + update pre-commit deps
+
+* fix(ui): force rounded box for deterministic rendering across platforms
+
+* fix(ui): use ASCII box for Windows compat; regenerate goldens
+
+* fix(tests): disable legacy_windows to keep frame width deterministic
+
+---------
+
+Co-authored-by: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+
 ## v1.3.2 (2026-04-13)
 
 ### Bug Fixes
