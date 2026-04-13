@@ -11,7 +11,7 @@ from pkg_upgrade.app import MacUpgradeApp
 from pkg_upgrade.config import (
     DEFAULT_CONFIG,
     config_exists,
-    load_config,
+    load_config_dict,
     save_config,
 )
 from pkg_upgrade.onboarding import OnboardingScreen
@@ -97,7 +97,7 @@ def main() -> None:
     args = parse_args()
 
     if args.onboard:
-        existing, _ = load_config()
+        existing, _ = load_config_dict()
         saved = _run_onboarding_wizard(existing)
         if saved is not None:
             save_config(saved)
@@ -118,7 +118,7 @@ def main() -> None:
         cfg = saved
         warning = None
     else:
-        cfg, warning = load_config()
+        cfg, warning = load_config_dict()
 
     if warning:
         print(f"warning: {warning}", file=sys.stderr)
