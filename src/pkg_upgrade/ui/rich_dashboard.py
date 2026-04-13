@@ -4,6 +4,7 @@ import asyncio
 import sys
 from typing import Any
 
+from rich import box
 from rich.console import Group, RenderableType
 from rich.panel import Panel
 from rich.text import Text
@@ -62,7 +63,7 @@ def build_frame(
         rows_renderables.append(Text(f"  filter: /{model.filter_text}"))
 
     title = f"pkg-upgrade  {_fmt_duration(elapsed_seconds)} elapsed"
-    return Panel(Group(*rows_renderables), title=title, border_style="cyan")
+    return Panel(Group(*rows_renderables), title=title, border_style="cyan", box=box.ROUNDED)
 
 
 class RichDashboardUI:
