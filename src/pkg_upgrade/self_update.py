@@ -46,7 +46,7 @@ def _is_editable_install() -> bool:
 def detect_install_method() -> InstallMethod:
     if _is_editable_install():
         return "editable"
-    exe = str(Path(sys.executable).resolve()).replace("\\", "/")
+    exe = str(Path(sys.executable)).replace("\\", "/")
     for signature, method in _PATH_SIGNATURES:
         if signature in exe:
             return method
