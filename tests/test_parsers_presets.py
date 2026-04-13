@@ -91,3 +91,13 @@ def test_choco_outdated_parses_pipes() -> None:
         ("nodejs", "20.11.0", "20.11.1"),
         ("vscode", "1.86.0", "1.87.0"),
     ]
+
+
+def test_mas_outdated_parses_lines() -> None:
+    parser = get_parser("mas_outdated")
+    pkgs = parser(_load("mas"))
+    assert [(p.name, p.current_version, p.latest_version) for p in pkgs] == [
+        ("497799835", "15.1", "15.3"),
+        ("1333542190", "7.9.11", "7.9.12"),
+        ("409183694", "13.2", "14.0"),
+    ]

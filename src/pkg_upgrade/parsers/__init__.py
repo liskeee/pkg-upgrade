@@ -30,6 +30,7 @@ from pkg_upgrade.parsers import (  # noqa: E402, F401
     dnf,
     flatpak,
     generic,
+    mas,
     pacman,
     scoop,
     snap,
