@@ -1,6 +1,84 @@
 # CHANGELOG
 
 
+## v1.5.0 (2026-04-13)
+
+### Features
+
+- **ui**: Btop/yazi-style TUI redesign ([#25](https://github.com/liskeee/pkg-upgrade/pull/25),
+  [`17a6db5`](https://github.com/liskeee/pkg-upgrade/commit/17a6db5f30140bd6ce47a8a59399d59ce5c413d5))
+
+* docs: add terminal UI rewrite implementation plan
+
+* build(deps): swap textual for rich+readchar
+
+* feat(ui): add key input normalization layer
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+* feat(ui): add unicode/ascii glyph tables
+
+* feat(ui): add UIModel render state
+
+* feat(ui): add DashboardUI/OnboardingUI protocols + factory
+
+* feat(ui): add PlainDashboardUI for non-TTY
+
+* feat(ui): add rich dashboard frame renderer with snapshot tests
+
+* feat(ui): add RichDashboardUI event loop with keybindings
+
+* feat(ui): add RichOnboardingUI linear 5-step wizard
+
+* feat(ui): wire rich UIs into cli; remove Textual app
+
+* docs: update README for rich terminal UI
+
+* fix(ci): utf-8 golden reads on Windows + update pre-commit deps
+
+* fix(ui): force rounded box for deterministic rendering across platforms
+
+* fix(ui): use ASCII box for Windows compat; regenerate goldens
+
+* fix(tests): disable legacy_windows to keep frame width deterministic
+
+* docs: spec and plan for btop-style TUI redesign
+
+Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+
+* feat(ui): add spinner frames to GlyphTable
+
+Add SPINNER_FRAMES_UNICODE and SPINNER_FRAMES_ASCII constants, a new `spinner_frames` field, and a
+  `spinner(tick)` helper method to GlyphTable. Both unicode() and ascii() classmethods now populate
+  the field.
+
+* feat(ui): add status colors and progress bar helper
+
+* feat(ui): add row, summary, and footer render helpers
+
+* chore(ui): consolidate dashboard test imports, note reserved params
+
+* feat(ui): btop-style layered dashboard frame
+
+Refactor build_frame to return Group(panel, footer) with summary bar, column header, and per-row
+  inline progress bars. Add tick parameter (default 0) for live spinner support in Task 5.
+  Regenerate all golden fixtures including two new scenarios (all_done, failed).
+
+* refactor(ui): explicit use_unicode flag, drop unused tick from render_summary
+
+* feat(ui): drive interactive dashboard with rich Live loop
+
+Wraps the interactive key loop in a Rich Live context so each key event triggers a full frame
+  redraw. The quiet=True path bypasses Live entirely, keeping all existing input tests deterministic
+  without a real TTY.
+
+* fix(ui): wire real elapsed clock into live dashboard
+
+---------
+
+Co-authored-by: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+
 ## v1.4.0 (2026-04-13)
 
 ### Features
