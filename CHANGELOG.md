@@ -1,6 +1,66 @@
 # CHANGELOG
 
 
+## v1.3.0 (2026-04-13)
+
+### Features
+
+- Shell completion for bash/zsh/fish/powershell
+  ([#21](https://github.com/liskeee/pkg-upgrade/pull/21),
+  [`9ec598b`](https://github.com/liskeee/pkg-upgrade/commit/9ec598ba8e66b08ccbc7fb8e488e0a5b4d73b9a0))
+
+* docs: shell completion design spec
+
+* docs: shell completion implementation plan
+
+* feat(cli): --list --plain emits manager keys with cache write-through
+
+* feat(cli): add 'completion <shell>' subcommand with packaged scripts
+
+* build: drop redundant force-include; packages already ships completions
+
+* feat(completion): bash script with flag + manager + comma list support
+
+* feat(completion): zsh compdef with flag descriptions and comma list support
+
+* feat(completion): fish script
+
+Replace fish stub with working completion: flag descriptions, manager completion via XDG cache with
+  built-in fallback, subcommand handling for `completion`, and pkgup alias wrapper. Append fish
+  syntax-check and manager-completion tests to the shell harness.
+
+Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+
+* feat(completion): powershell Register-ArgumentCompleter script
+
+Replace the PowerShell stub with a full argument completer supporting flags, --only/--skip
+  comma-separated manager values (backed by the shared managers.list cache), and the `completion`
+  subcommand shells. Registered for both `pkg-upgrade` and `pkgup`.
+
+Restructure tests/test_completion_shells.py: drop the module-level Windows skip so PowerShell tests
+  run everywhere pwsh is available, and apply a per-test @posix_only decorator to the bash/zsh/fish
+  harness tests. Add static and pwsh-parse tests for the ps1 script.
+
+* feat(formula): install bash/zsh/fish completions
+
+* feat(install): scoop + install.ps1 source completion from $PROFILE
+
+Add post_install/uninstaller hooks to the Scoop manifest and a completion-sourcing block to
+  install.ps1. Both paths idempotently append a dot-source line for pkg-upgrade.ps1 to $PROFILE,
+  using Select-String to avoid dupes, and the uninstaller strips the line back out. Adds a static
+  assertion test to lock the shape of both files.
+
+* feat(install.sh): drop shell completion for bash/zsh/fish
+
+* docs: shell completion install guide
+
+* ci: matrix job for bash/zsh/fish completion tests
+
+---------
+
+Co-authored-by: Claude Opus 4.6 <noreply@anthropic.com>
+
+
 ## v1.2.2 (2026-04-13)
 
 ### Bug Fixes
