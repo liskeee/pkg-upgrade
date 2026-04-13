@@ -22,13 +22,13 @@ FIXTURES = Path(__file__).parent / "fixtures" / "rich_ui"
 def _render(model: UIModel) -> str:
     c = Console(
         width=80,
-        height=24,
+        height=30,
         record=True,
         force_terminal=True,
         color_system=None,
         legacy_windows=False,
     )
-    c.print(build_frame(model, GlyphTable.ascii(), elapsed_seconds=42))
+    c.print(build_frame(model, GlyphTable.ascii(), elapsed_seconds=42, tick=0))
     return c.export_text()
 
 
@@ -131,3 +131,17 @@ def test_render_footer_contains_keybinds() -> None:
     out = render_footer().plain
     for key in ("j/k", "enter", "y", "s", "q"):
         assert key in out
+
+
+def test_frame_all_done() -> None:
+    rows = [
+        Row("brew", "Homebrew", "H", ManagerStatus.DONE, 12, 12, 30, []),
+        Row("pip", "pip", "P", ManagerStatus.DONE, 4, 4, 9, []),
+    ]
+    _assert_golden("all_done", _render(UIModel(rows=rows)))
+
+
+def test_frame_failed_row() -> None:
+    rows = _base_rows()
+    rows[0].status = ManagerStatus.ERROR
+    _assert_golden("failed", _render(UIModel(rows=rows)))
