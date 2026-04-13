@@ -81,3 +81,13 @@ def test_scoop_status_parses_fixed_width() -> None:
         ("ripgrep", "14.1.0", "14.1.1"),
         ("nodejs", "20.11.0", "20.11.1"),
     ]
+
+
+def test_choco_outdated_parses_pipes() -> None:
+    parser = get_parser("choco_outdated")
+    pkgs = parser(_load("choco"))
+    assert [(p.name, p.current_version, p.latest_version) for p in pkgs] == [
+        ("git", "2.43.0", "2.44.0"),
+        ("nodejs", "20.11.0", "20.11.1"),
+        ("vscode", "1.86.0", "1.87.0"),
+    ]
