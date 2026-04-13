@@ -256,13 +256,19 @@ class RichDashboardUI:
 
         tick = 0
         start_time = time.monotonic()
+
+        def _frame() -> Any:
+            return build_frame(
+                model,
+                self._glyphs,
+                elapsed_seconds=int(time.monotonic() - start_time),
+                tick=tick,
+            )
+
         with Live(
-            build_frame(
-                model, self._glyphs, elapsed_seconds=int(time.monotonic() - start_time), tick=tick
-            ),
+            _frame(),
             refresh_per_second=8,
             transient=False,
-            auto_refresh=False,
         ) as live:
             while not model.all_done():
                 key = await self._read_key_soft()
@@ -273,12 +279,4 @@ class RichDashboardUI:
                     break
                 model = result
                 tick += 1
-                live.update(
-                    build_frame(
-                        model,
-                        self._glyphs,
-                        elapsed_seconds=int(time.monotonic() - start_time),
-                        tick=tick,
-                    ),
-                    refresh=True,
-                )
+                live.update(_frame())
