@@ -36,6 +36,11 @@ class Executor:
         self.states: dict[str, ManagerState] = {
             m.key: ManagerState(manager=m) for m in self.all_managers()
         }
+        self._sem: asyncio.Semaphore | None = None
+
+    def set_max_parallel(self, n: int | None) -> None:
+        """Cap per-level concurrency. Pass None to remove the limit."""
+        self._sem = asyncio.Semaphore(n) if n is not None else None
 
     @classmethod
     def default(cls) -> Executor:
@@ -88,26 +93,35 @@ class Executor:
 
     async def check_all(self, on_update: OnUpdate | None = None) -> None:
         async def check_one(mgr: PackageManager) -> None:
-            state = self.states[mgr.key]
-            if not await mgr.is_available():
-                state.status = ManagerStatus.UNAVAILABLE
+            async def _do() -> None:
+                state = self.states[mgr.key]
+                if not await mgr.is_available():
+                    state.status = ManagerStatus.UNAVAILABLE
+                    if on_update:
+                        await on_update(mgr.key, state)
+                    return
+                state.status = ManagerStatus.CHECKING
                 if on_update:
                     await on_update(mgr.key, state)
-                return
-            state.status = ManagerStatus.CHECKING
-            if on_update:
-                await on_update(mgr.key, state)
-            try:
-                state.outdated = await mgr.check_outdated()
-            except Exception as exc:
-                state.error = str(exc)
-                state.status = ManagerStatus.ERROR
+                try:
+                    state.outdated = await mgr.check_outdated()
+                except Exception as exc:
+                    state.error = str(exc)
+                    state.status = ManagerStatus.ERROR
+                    if on_update:
+                        await on_update(mgr.key, state)
+                    return
+                state.status = (
+                    ManagerStatus.AWAITING_CONFIRM if state.outdated else ManagerStatus.DONE
+                )
                 if on_update:
                     await on_update(mgr.key, state)
-                return
-            state.status = ManagerStatus.AWAITING_CONFIRM if state.outdated else ManagerStatus.DONE
-            if on_update:
-                await on_update(mgr.key, state)
+
+            if self._sem is not None:
+                async with self._sem:
+                    await _do()
+            else:
+                await _do()
 
         async def run_group(group: ExecutionGroup) -> None:
             if group.parallel:
@@ -124,23 +138,29 @@ class Executor:
         on_update: OnUpdate | None = None,
         on_result: OnResult | None = None,
     ) -> list[Result]:
-        state = self.states[key]
-        state.status = ManagerStatus.UPGRADING
-        if on_update:
-            await on_update(key, state)
-
-        for pkg in state.outdated:
-            result = await state.manager.upgrade(pkg)
-            state.results.append(result)
-            if on_result:
-                await on_result(key, result)
+        async def _do() -> list[Result]:
+            state = self.states[key]
+            state.status = ManagerStatus.UPGRADING
             if on_update:
                 await on_update(key, state)
 
-        state.status = ManagerStatus.DONE
-        if on_update:
-            await on_update(key, state)
-        return state.results
+            for pkg in state.outdated:
+                result = await state.manager.upgrade(pkg)
+                state.results.append(result)
+                if on_result:
+                    await on_result(key, result)
+                if on_update:
+                    await on_update(key, state)
+
+            state.status = ManagerStatus.DONE
+            if on_update:
+                await on_update(key, state)
+            return state.results
+
+        if self._sem is not None:
+            async with self._sem:
+                return await _do()
+        return await _do()
 
     def skip_manager(self, key: str) -> None:
         self.states[key].status = ManagerStatus.SKIPPED

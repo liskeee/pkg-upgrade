@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 import argparse
+import asyncio
 import sys
 from datetime import date
 from pathlib import Path
@@ -17,7 +20,8 @@ from pkg_upgrade.config import (
 from pkg_upgrade.onboarding import OnboardingScreen
 
 
-def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+def build_parser() -> argparse.ArgumentParser:
+    """Build and return the argument parser (extracted for testability)."""
     parser = argparse.ArgumentParser(
         prog="mac-upgrade",
         description="Upgrade all macOS package managers with a beautiful TUI dashboard",
@@ -39,8 +43,24 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         action="store_true",
         help="Run the configuration wizard and exit",
     )
+    parser.add_argument(
+        "--show-graph",
+        action="store_true",
+        help="Print execution plan (topo-sorted groups) and exit",
+    )
+    parser.add_argument(
+        "--max-parallel",
+        type=int,
+        default=None,
+        metavar="N",
+        help="Cap per-level concurrency",
+    )
     parser.add_argument("--version", action="version", version=f"mac-upgrade {__version__}")
-    return parser.parse_args(argv)
+    return parser
+
+
+def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    return build_parser().parse_args(argv)
 
 
 def get_log_path(log_enabled: bool, log_dir: str | None) -> str | None:
@@ -76,6 +96,59 @@ def resolve_settings(args: argparse.Namespace, cfg: dict[str, Any]) -> dict[str,
     }
 
 
+def _print_list(skip: set[str] | None = None, only: set[str] | None = None) -> int:
+    """Print managers grouped by Available / Unavailable / Not on this OS."""
+    from pkg_upgrade.platform import current_os  # noqa: PLC0415
+    from pkg_upgrade.registry import (  # noqa: PLC0415
+        all_registered,
+        discover_managers,
+        select_managers,
+    )
+
+    on_os = discover_managers(load_entry_points=False, load_declarative=True)
+    on_os_filtered = select_managers(on_os, skip=skip, only=only)
+    on_os_keys = {m.key for m in on_os}
+    all_classes = all_registered()
+    cur = current_os()
+
+    async def _probe() -> list[tuple[Any, bool]]:
+        return [(m, await m.is_available()) for m in on_os_filtered]
+
+    probed = asyncio.run(_probe())
+    available = [m for m, ok in probed if ok]
+    unavailable = [m for m, ok in probed if not ok]
+    other_os = [c for c in all_classes if c.key not in on_os_keys]
+
+    print("Available:")
+    for m in available:
+        print(f"  {m.icon} {m.key} — {m.name}")
+    print()
+    print("Unavailable (declared for this OS, binary missing):")
+    for m in unavailable:
+        hint = f"  hint: {m.install_hint}" if m.install_hint else ""
+        print(f"  {m.icon} {m.key} — {m.name}{hint}")
+    print()
+    print(f"Not on this OS ({cur}):")
+    for c in other_os:
+        plats = ",".join(sorted(c.platforms))
+        print(f"  {c.icon} {c.key} — {c.name} [{plats}]")
+    return 0
+
+
+def _print_graph(skip: set[str] | None = None, only: set[str] | None = None) -> int:
+    """Print the topo-sorted execution plan and exit."""
+    from pkg_upgrade.executor import Executor  # noqa: PLC0415
+    from pkg_upgrade.registry import discover_managers, select_managers  # noqa: PLC0415
+
+    managers = discover_managers(load_entry_points=False, load_declarative=True)
+    managers = select_managers(managers, skip=skip, only=only)
+    ex = Executor.from_managers(managers)
+    for i, group in enumerate(ex.groups):
+        keys = ", ".join(m.key for m in group.managers)
+        print(f"Level {i}: {keys}")
+    return 0
+
+
 def _run_onboarding_wizard(initial: dict[str, Any]) -> dict[str, Any] | None:
     """Launch the Textual onboarding screen. Returns saved config or None."""
     result: dict[str, Any] | None = None
@@ -93,7 +166,7 @@ def _run_onboarding_wizard(initial: dict[str, Any]) -> dict[str, Any] | None:
     return result
 
 
-def main() -> None:
+def main() -> int:
     args = parse_args()
 
     if args.onboard:
@@ -104,16 +177,22 @@ def main() -> None:
             print(f"Saved configuration to {Path.home() / '.mac-upgrade'}")
         else:
             print("Onboarding cancelled — no changes written.")
-        return
+        return 0
 
-    if args.list_managers or "--version" in sys.argv:
+    if args.list_managers:
+        return _print_list(skip=args.skip, only=args.only)
+
+    if args.show_graph:
+        return _print_graph(skip=args.skip, only=args.only)
+
+    if "--version" in sys.argv:
         cfg = DEFAULT_CONFIG
         warning = None
     elif not config_exists():
         saved = _run_onboarding_wizard(dict(DEFAULT_CONFIG))
         if saved is None:
             print("Onboarding cancelled — exiting.")
-            return
+            return 0
         save_config(saved)
         cfg = saved
         warning = None
@@ -133,5 +212,7 @@ def main() -> None:
         notify=settings["notify"],
         log_path=settings["log_path"],
         list_only=settings["list_only"],
+        max_parallel=args.max_parallel,
     )
     app.run()
+    return 0

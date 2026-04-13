@@ -66,10 +66,12 @@ class MacUpgradeApp(App[None]):
         notify: bool = True,
         log_path: str | None = None,
         list_only: bool = False,
+        max_parallel: int | None = None,
     ) -> None:
         super().__init__()
         managers = select_managers(discover_managers(), skip=skip, only=only)
         self.executor = Executor.from_managers(managers)
+        self.executor.set_max_parallel(max_parallel)
         self.auto_yes = auto_yes
         self.dry_run = dry_run
         self.notifier = Notifier(log_path=log_path, notify=notify)
