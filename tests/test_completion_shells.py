@@ -13,7 +13,9 @@ COMPLETIONS = Path(__file__).resolve().parent.parent / "src" / "pkg_upgrade" / "
 pytestmark = pytest.mark.skipif(sys.platform == "win32", reason="POSIX-only shell harness")
 
 
-def _bash_complete(line: str, cache_content: str = "brew\ncask\ngem\nnpm\npip\nsystem\n") -> list[str]:
+def _bash_complete(
+    line: str, cache_content: str = "brew\ncask\ngem\nnpm\npip\nsystem\n"
+) -> list[str]:
     bash = shutil.which("bash")
     if not bash:
         pytest.skip("bash not installed")
@@ -87,3 +89,30 @@ def test_zsh_script_lists_manager_keys_in_source():
     assert "managers.list" in text
     for k in ("brew", "cask", "pip", "npm", "gem", "system"):
         assert k in text
+
+
+def test_fish_script_is_syntactically_valid():
+    fish = shutil.which("fish")
+    if not fish:
+        pytest.skip("fish not installed")
+    script = COMPLETIONS / "pkg-upgrade.fish"
+    r = subprocess.run([fish, "-n", str(script)], capture_output=True, text=True, check=False)
+    assert r.returncode == 0, r.stderr
+
+
+def test_fish_manager_completion():
+    fish = shutil.which("fish")
+    if not fish:
+        pytest.skip("fish not installed")
+    cache = Path(os.environ["XDG_CACHE_HOME"]) / "pkg-upgrade" / "managers.list"
+    cache.parent.mkdir(parents=True, exist_ok=True)
+    cache.write_text("brew\ncask\ngem\nnpm\npip\nsystem\n", encoding="utf-8")
+    script = COMPLETIONS / "pkg-upgrade.fish"
+    r = subprocess.run(
+        [fish, "-c", f"source {script}; complete -C 'pkg-upgrade --only '"],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    assert "brew" in r.stdout
+    assert "pip" in r.stdout
