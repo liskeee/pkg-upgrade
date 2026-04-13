@@ -1,4 +1,5 @@
 """pkg_upgrade terminal UI."""
+
 from __future__ import annotations
 
 import sys
@@ -27,8 +28,10 @@ class OnboardingUI(Protocol):
 def select_dashboard() -> DashboardUI:
     if sys.stdout.isatty():
         from pkg_upgrade.ui.rich_dashboard import RichDashboardUI  # noqa: PLC0415
+
         return RichDashboardUI()
     from pkg_upgrade.ui.plain_dashboard import PlainDashboardUI  # noqa: PLC0415
+
     return PlainDashboardUI()
 
 
@@ -36,4 +39,5 @@ def select_onboarding() -> OnboardingUI | None:
     if not sys.stdout.isatty():
         return None
     from pkg_upgrade.ui.rich_onboarding import RichOnboardingUI  # noqa: PLC0415
+
     return RichOnboardingUI()

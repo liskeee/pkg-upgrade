@@ -7,19 +7,15 @@ from datetime import date
 from pathlib import Path
 from typing import Any
 
-from textual import work
-from textual.app import App, ComposeResult
-
 from pkg_upgrade import __version__
-from pkg_upgrade.app import PkgUpgradeApp
 from pkg_upgrade.config import (
     DEFAULT_CONFIG,
     config_exists,
     load_config_dict,
     save_config,
 )
-from pkg_upgrade.onboarding import OnboardingScreen
 from pkg_upgrade.self_update import run_self_update
+from pkg_upgrade.ui import select_dashboard, select_onboarding
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -176,28 +172,7 @@ def _handle_list(args: argparse.Namespace) -> int:
     return _print_list(skip=args.skip, only=args.only)
 
 
-def _run_onboarding_wizard(initial: dict[str, Any]) -> dict[str, Any] | None:
-    """Launch the Textual onboarding screen. Returns saved config or None."""
-    result: dict[str, Any] | None = None
-
-    class WizardApp(App[None]):
-        def compose(self) -> ComposeResult:
-            return []
-
-        def on_mount(self) -> None:
-            self._run_wizard()
-
-        @work
-        async def _run_wizard(self) -> None:
-            nonlocal result
-            result = await self.push_screen_wait(OnboardingScreen(initial=initial))
-            self.exit()
-
-    WizardApp().run()
-    return result
-
-
-def main() -> int:  # noqa: PLR0911
+def main() -> int:  # noqa: PLR0911, PLR0912
     args = parse_args()
 
     if args.subcommand == "completion":
@@ -209,13 +184,21 @@ def main() -> int:  # noqa: PLR0911
         return run_self_update()
 
     if args.onboard:
-        existing, _ = load_config_dict()
-        saved = _run_onboarding_wizard(existing)
-        if saved is not None:
-            save_config(saved)
-            print(f"Saved configuration to {Path.home() / '.mac-upgrade'}")
-        else:
+        ob = select_onboarding()
+        if ob is None:
+            print(
+                "error: onboarding requires an interactive terminal."
+                " Re-run in a TTY, or create ~/.mac-upgrade manually.",
+                file=sys.stderr,
+            )
+            return 2
+        existing, _ = load_config_dict() if config_exists() else (dict(DEFAULT_CONFIG), None)
+        saved = ob.run(existing)
+        if saved is None:
             print("Onboarding cancelled — no changes written.")
+            return 0
+        save_config(saved)
+        print(f"Saved configuration to {Path.home() / '.mac-upgrade'}")
         return 0
 
     if args.list_managers:
@@ -228,7 +211,15 @@ def main() -> int:  # noqa: PLR0911
         cfg = DEFAULT_CONFIG
         warning = None
     elif not config_exists():
-        saved = _run_onboarding_wizard(dict(DEFAULT_CONFIG))
+        ob = select_onboarding()
+        if ob is None:
+            print(
+                "error: onboarding requires an interactive terminal."
+                " Re-run in a TTY, or create ~/.mac-upgrade manually.",
+                file=sys.stderr,
+            )
+            return 2
+        saved = ob.run(dict(DEFAULT_CONFIG))
         if saved is None:
             print("Onboarding cancelled — exiting.")
             return 0
@@ -243,15 +234,14 @@ def main() -> int:  # noqa: PLR0911
 
     settings = resolve_settings(args, cfg)
 
-    app = PkgUpgradeApp(
-        skip=settings["skip"],
-        only=settings["only"],
-        auto_yes=settings["auto_yes"],
-        dry_run=settings["dry_run"],
-        notify=settings["notify"],
-        log_path=settings["log_path"],
-        list_only=settings["list_only"],
-        max_parallel=args.max_parallel,
-    )
-    app.run()
+    from pkg_upgrade.executor import Executor  # noqa: PLC0415
+    from pkg_upgrade.registry import discover_managers, select_managers  # noqa: PLC0415
+
+    managers = discover_managers(load_entry_points=False, load_declarative=True)
+    managers = select_managers(managers, skip=settings["skip"], only=settings["only"])
+    executor = Executor.from_managers(managers)
+    if args.max_parallel is not None:
+        executor.set_max_parallel(args.max_parallel)
+    ui = select_dashboard()
+    asyncio.run(ui.run(executor, auto_yes=settings["auto_yes"], dry_run=settings["dry_run"]))
     return 0

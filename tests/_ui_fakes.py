@@ -63,6 +63,7 @@ class FakeExecutor:
 
     def all_done(self) -> bool:
         from pkg_upgrade.status import ACTIVE_STATUSES  # noqa: PLC0415
+
         return all(s.status not in ACTIVE_STATUSES for s in self.states.values())
 
 

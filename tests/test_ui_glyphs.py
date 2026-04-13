@@ -17,5 +17,9 @@ def test_ascii_table_has_all_statuses_and_is_ascii() -> None:
 
 
 def test_pick_glyph_table_falls_back_for_ascii_encoding() -> None:
-    assert pick_glyph_table("utf-8").status(ManagerStatus.DONE) == GlyphTable.unicode().status(ManagerStatus.DONE)
-    assert pick_glyph_table("ascii").status(ManagerStatus.DONE) == GlyphTable.ascii().status(ManagerStatus.DONE)
+    assert pick_glyph_table("utf-8").status(ManagerStatus.DONE) == GlyphTable.unicode().status(
+        ManagerStatus.DONE
+    )
+    assert pick_glyph_table("ascii").status(ManagerStatus.DONE) == GlyphTable.ascii().status(
+        ManagerStatus.DONE
+    )

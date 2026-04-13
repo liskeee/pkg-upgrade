@@ -33,6 +33,7 @@ class KeyInput(Protocol):
 class RealInput:
     def read_key(self) -> str:
         import readchar  # noqa: PLC0415
+
         return normalize_key(readchar.readkey())
 
 

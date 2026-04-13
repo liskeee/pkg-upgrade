@@ -25,6 +25,7 @@ class PlainDashboardUI:
                 if s.outdated:
                     say(k, f"dry-run: would upgrade {len(s.outdated)} package(s)")
                     from pkg_upgrade.status import ManagerStatus  # noqa: PLC0415
+
                     s.status = ManagerStatus.DONE
             return
 

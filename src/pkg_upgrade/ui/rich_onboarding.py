@@ -36,6 +36,7 @@ class RichOnboardingUI:
         try:
             loop = asyncio.new_event_loop()
             try:
+
                 async def _probe() -> dict[str, bool]:
                     return {m.key: bool(await m.is_available()) for m in mgrs}
 
@@ -45,7 +46,11 @@ class RichOnboardingUI:
         except Exception:
             available = {m.key: True for m in mgrs}
 
-        selected = {m.key for m in mgrs if available.get(m.key, False) and m.key in set(cfg.get("managers") or [])}
+        selected = {
+            m.key
+            for m in mgrs
+            if available.get(m.key, False) and m.key in set(cfg.get("managers") or [])
+        }
         if not selected:
             selected = {m.key for m in mgrs if available.get(m.key, False)}
         idx = 0

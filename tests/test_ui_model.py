@@ -4,9 +4,36 @@ from pkg_upgrade.ui._model import Row, UIModel
 
 def _rows() -> list[Row]:
     return [
-        Row(key="brew", name="Homebrew", icon="🍺", status=ManagerStatus.UPGRADING, done=3, total=12, duration_s=18, log=[]),
-        Row(key="cask", name="Casks", icon="🍻", status=ManagerStatus.PENDING, done=0, total=0, duration_s=0, log=[]),
-        Row(key="pip", name="pip", icon="🐍", status=ManagerStatus.DONE, done=4, total=4, duration_s=9, log=[]),
+        Row(
+            key="brew",
+            name="Homebrew",
+            icon="🍺",
+            status=ManagerStatus.UPGRADING,
+            done=3,
+            total=12,
+            duration_s=18,
+            log=[],
+        ),
+        Row(
+            key="cask",
+            name="Casks",
+            icon="🍻",
+            status=ManagerStatus.PENDING,
+            done=0,
+            total=0,
+            duration_s=0,
+            log=[],
+        ),
+        Row(
+            key="pip",
+            name="pip",
+            icon="🐍",
+            status=ManagerStatus.DONE,
+            done=4,
+            total=4,
+            duration_s=9,
+            log=[],
+        ),
     ]
 
 
