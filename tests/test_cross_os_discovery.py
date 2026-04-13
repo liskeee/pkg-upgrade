@@ -22,9 +22,7 @@ def _fresh_registry():
     ("os_name", "expected_decl"),
     [("macos", MACOS_DECL), ("linux", LINUX_DECL), ("windows", WINDOWS_DECL)],
 )
-def test_discover_includes_declared_managers_for_os(
-    os_name: str, expected_decl: set[str]
-) -> None:
+def test_discover_includes_declared_managers_for_os(os_name: str, expected_decl: set[str]) -> None:
     with patch("pkg_upgrade.registry.current_os", return_value=os_name):
         managers = discover_managers(load_entry_points=False)
     keys = {m.key for m in managers}
