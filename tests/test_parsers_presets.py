@@ -51,3 +51,13 @@ def test_flatpak_parses_tab_columns() -> None:
         ("org.gimp.GIMP", "2.10.36"),
         ("com.github.tchx84.Flatseal", "2.2.0"),
     ]
+
+
+def test_snap_refresh_list_skips_header() -> None:
+    parser = get_parser("snap_refresh_list")
+    pkgs = parser(_load("snap"))
+    assert [(p.name, p.latest_version) for p in pkgs] == [
+        ("core22", "20240111"),
+        ("firefox", "123.0.1-1"),
+        ("snapd", "2.61.2"),
+    ]
