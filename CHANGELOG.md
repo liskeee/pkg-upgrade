@@ -1,6 +1,34 @@
 # CHANGELOG
 
 
+## v1.2.0 (2026-04-13)
+
+### Features
+
+- Distribution & release automation (Plan 3) ([#16](https://github.com/liskeee/pkg-upgrade/pull/16),
+  [`9175153`](https://github.com/liskeee/pkg-upgrade/commit/9175153f72d76b107dfd3719cb3b2a947d5e200d))
+
+* docs: add Plan 3 (distribution & release automation)
+
+* ci(release): fix PyPI URL to pkg-upgrade and attach wheel to GH release
+
+* ci(formula-bump): target Formula/pkg-upgrade.rb
+
+* feat(scoop): add manifest template for pkg-upgrade
+
+* ci(scoop): auto-bump manifest and mirror into scoop-bucket
+
+* feat(install.sh): rename env vars to PKG_UPGRADE_* and support Linux
+
+* feat(install.ps1): add Windows installer with pipx + venv fallback
+
+* ci(installers): parse install.sh and install.ps1 on all OSes
+
+* test: guard scoop manifest schema + installer env var names
+
+* docs(readme): add Windows install instructions (install.ps1 + scoop)
+
+
 ## v1.1.0 (2026-04-13)
 
 ### Features
