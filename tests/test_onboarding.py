@@ -6,7 +6,7 @@ path, or a wizard that dismisses without collecting answers.
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
 
 import pytest
 from textual import work
@@ -16,6 +16,10 @@ from textual.widgets import Button, Checkbox, Input, RadioButton
 from pkg_upgrade.config import DEFAULT_CONFIG
 from pkg_upgrade.onboarding import STEP_IDS, OnboardingScreen
 from pkg_upgrade.registry import discover_managers
+
+
+def _screen(app: App[Any]) -> OnboardingScreen:
+    return cast(OnboardingScreen, app.screen)
 
 
 class _Host(App[None]):
@@ -61,7 +65,7 @@ async def test_onboarding_populates_manager_checkboxes() -> None:
     app = _Host()
     async with app.run_test() as pilot:
         await _wait_for_detection(pilot)
-        screen = app.screen
+        screen = _screen(app)
         ids = {cb.id for cb in screen.query("#manager-checks Checkbox")}
         assert ids == {f"mgr-{k}" for k in expected_keys}
         status = str(screen.query_one("#detect-status").render())
@@ -74,7 +78,7 @@ async def test_onboarding_save_returns_selected_managers() -> None:
     async with app.run_test() as pilot:
         await _wait_for_detection(pilot)
 
-        screen = app.screen
+        screen = _screen(app)
         screen._go_to(len(STEP_IDS) - 1)
         await pilot.pause()
         btn = screen.query_one("#save-btn", Button)
@@ -115,11 +119,11 @@ async def test_onboarding_respects_initial_managers() -> None:
     app = _Host(initial={**DEFAULT_CONFIG, "managers": chosen})
     async with app.run_test() as pilot:
         await _wait_for_detection(pilot)
-        screen = app.screen
+        screen = _screen(app)
         checked = {
             cb.id.removeprefix("mgr-")
-            for cb in screen.query("#manager-checks Checkbox")
-            if cb.value
+            for cb in screen.query(Checkbox)
+            if cb.id and cb.id.startswith("mgr-") and cb.value
         }
     assert checked.issubset(set(available_keys))
     assert checked == set(chosen) or checked == set()
@@ -130,7 +134,7 @@ async def test_onboarding_auto_yes_and_log_propagate_to_result() -> None:
     app = _Host(initial=dict(DEFAULT_CONFIG))
     async with app.run_test() as pilot:
         await _wait_for_detection(pilot)
-        screen = app.screen
+        screen = _screen(app)
         screen.query_one("#confirm-yes", RadioButton).value = True
         screen.query_one("#notify-check", Checkbox).value = False
         screen.query_one("#log-check", Checkbox).value = False
@@ -160,7 +164,7 @@ async def test_onboarding_empty_registry_does_not_crash(monkeypatch: pytest.Monk
     async with app.run_test() as pilot:
         for _ in range(20):
             await pilot.pause()
-        screen = app.screen
+        screen = _screen(app)
         assert len(screen.query("#manager-checks Checkbox")) == 0
         status = str(screen.query_one("#detect-status").render())
         assert "Detected 0" in status
@@ -182,10 +186,10 @@ async def test_onboarding_back_button_navigates() -> None:
     app = _Host()
     async with app.run_test() as pilot:
         await _wait_for_detection(pilot)
-        assert app.screen.query_one("#back-btn", Button).disabled is True
+        assert _screen(app).query_one("#back-btn", Button).disabled is True
         await pilot.click("#next-btn")
         await pilot.pause()
-        assert app.screen.query_one("#back-btn", Button).disabled is False
+        assert _screen(app).query_one("#back-btn", Button).disabled is False
         await pilot.click("#back-btn")
         await pilot.pause()
-        assert app.screen.query_one("#back-btn", Button).disabled is True
+        assert _screen(app).query_one("#back-btn", Button).disabled is True
