@@ -13,7 +13,14 @@ FIXTURES = Path(__file__).parent / "fixtures" / "rich_ui"
 
 
 def _render(model: UIModel) -> str:
-    c = Console(width=80, height=24, record=True, force_terminal=True, color_system=None)
+    c = Console(
+        width=80,
+        height=24,
+        record=True,
+        force_terminal=True,
+        color_system=None,
+        legacy_windows=False,
+    )
     c.print(build_frame(model, GlyphTable.ascii(), elapsed_seconds=42))
     return c.export_text()
 
