@@ -4,13 +4,11 @@ import asyncio
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
 
+from pkg_upgrade.errors import ConfigurationError
 from pkg_upgrade.manager import PackageManager
 from pkg_upgrade.models import Package, Result
 from pkg_upgrade.registry import discover_managers
 from pkg_upgrade.status import ManagerStatus
-
-SEQUENTIAL_CHAIN = ["brew", "cask", "pip"]
-INDEPENDENT = ["npm", "gem", "system"]
 
 
 @dataclass
@@ -46,20 +44,39 @@ class Executor:
     @classmethod
     def from_managers(cls, managers: list[PackageManager]) -> Executor:
         by_key = {m.key: m for m in managers}
+        indegree: dict[str, int] = dict.fromkeys(by_key, 0)
+        children: dict[str, list[str]] = {k: [] for k in by_key}
+
+        for mgr in managers:
+            for dep in mgr.depends_on:
+                if dep not in by_key:
+                    continue  # soft dep; silently drop
+                indegree[mgr.key] += 1
+                children[dep].append(mgr.key)
+
         groups: list[ExecutionGroup] = []
+        ready = [k for k, d in indegree.items() if d == 0]
+        placed = 0
+        while ready:
+            level = sorted(ready)
+            groups.append(
+                ExecutionGroup(
+                    managers=[by_key[k] for k in level],
+                    parallel=True,
+                )
+            )
+            placed += len(level)
+            next_ready: list[str] = []
+            for k in level:
+                for child in children[k]:
+                    indegree[child] -= 1
+                    if indegree[child] == 0:
+                        next_ready.append(child)
+            ready = next_ready
 
-        chain = [by_key[k] for k in SEQUENTIAL_CHAIN if k in by_key]
-        if chain:
-            groups.append(ExecutionGroup(managers=chain, parallel=False))
-
-        independent = [by_key[k] for k in INDEPENDENT if k in by_key]
-        if independent:
-            groups.append(ExecutionGroup(managers=independent, parallel=True))
-
-        known = set(SEQUENTIAL_CHAIN) | set(INDEPENDENT)
-        extra = [m for m in managers if m.key not in known]
-        if extra:
-            groups.append(ExecutionGroup(managers=extra, parallel=True))
+        if placed != len(by_key):
+            remaining = [k for k, d in indegree.items() if d > 0]
+            raise ConfigurationError(f"Dependency cycle among managers: {sorted(remaining)}")
 
         return cls(groups)
 
