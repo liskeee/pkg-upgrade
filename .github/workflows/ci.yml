@@ -75,6 +75,34 @@ jobs:
       - run: python -m pip install -e ".[dev]"
       - run: pre-commit run --all-files --show-diff-on-failure
 
+  installers:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            shell: bash
+            script: install.sh
+          - os: macos-latest
+            shell: bash
+            script: install.sh
+          - os: windows-latest
+            shell: pwsh
+            script: install.ps1
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: Syntax check (bash)
+        if: matrix.shell == 'bash'
+        run: bash -n ${{ matrix.script }}
+      - name: Syntax check (pwsh)
+        if: matrix.shell == 'pwsh'
+        shell: pwsh
+        run: |
+          $errs = $null
+          [System.Management.Automation.Language.Parser]::ParseFile('${{ matrix.script }}', [ref]$null, [ref]$errs) | Out-Null
+          if ($errs) { $errs | ForEach-Object { Write-Error $_.Message }; exit 1 }
+
   build:
     runs-on: ubuntu-latest
     steps:

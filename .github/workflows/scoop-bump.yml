@@ -1,0 +1,89 @@
+name: Bump Scoop Manifest
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to bump manifest to (e.g. v1.2.0)"
+        required: true
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  bump:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.release.prerelease == false }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: main
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Resolve tag
+        id: tag
+        run: |
+          TAG="${{ github.event.inputs.tag || github.event.release.tag_name }}"
+          VERSION="${TAG#v}"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Download wheel and compute SHA256
+        id: wheel
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ steps.tag.outputs.tag }}"
+          VERSION="${{ steps.tag.outputs.version }}"
+          WHEEL="pkg_upgrade-${VERSION}-py3-none-any.whl"
+          URL="https://github.com/${{ github.repository }}/releases/download/${TAG}/${WHEEL}"
+          curl -fsSL "$URL" -o "$WHEEL"
+          HASH=$(sha256sum "$WHEEL" | awk '{print $1}')
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+          echo "hash=$HASH" >> "$GITHUB_OUTPUT"
+
+      - name: Rewrite scoop/pkg-upgrade.json
+        env:
+          VERSION: ${{ steps.tag.outputs.version }}
+          URL: ${{ steps.wheel.outputs.url }}
+          HASH: ${{ steps.wheel.outputs.hash }}
+        run: |
+          python3 <<'PY'
+          import json, os, pathlib
+          p = pathlib.Path("scoop/pkg-upgrade.json")
+          m = json.loads(p.read_text())
+          m["version"] = os.environ["VERSION"]
+          m["url"] = os.environ["URL"]
+          m["hash"] = os.environ["HASH"]
+          p.write_text(json.dumps(m, indent=4) + "\n")
+          PY
+
+      - name: Open PR against this repo
+        uses: peter-evans/create-pull-request@v8
+        with:
+          branch: scoop-bump/${{ steps.tag.outputs.tag }}
+          commit-message: "chore(scoop): bump to ${{ steps.tag.outputs.tag }}"
+          title: "chore(scoop): bump to ${{ steps.tag.outputs.tag }}"
+          body: |
+            Automated Scoop manifest bump for ${{ steps.tag.outputs.tag }}.
+
+            - Updated `version`, `url`, `hash`
+          labels: scoop
+          base: main
+
+      - name: Mirror manifest into liskeee/scoop-bucket
+        if: ${{ secrets.SCOOP_PUSH_TOKEN != '' }}
+        env:
+          GH_TOKEN: ${{ secrets.SCOOP_PUSH_TOKEN }}
+          TAG: ${{ steps.tag.outputs.tag }}
+        run: |
+          git clone --depth 1 "https://x-access-token:${GH_TOKEN}@github.com/liskeee/scoop-bucket.git" bucket
+          mkdir -p bucket/bucket
+          cp scoop/pkg-upgrade.json bucket/bucket/pkg-upgrade.json
+          cd bucket
+          git -c user.name=github-actions -c user.email=actions@github.com \
+              commit -am "pkg-upgrade: bump to ${TAG}" || exit 0
+          git push origin HEAD:main

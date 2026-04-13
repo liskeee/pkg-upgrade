@@ -54,6 +54,19 @@ cd pkg-upgrade
 pipx install .
 ```
 
+### Windows
+
+```powershell
+iwr -useb https://raw.githubusercontent.com/liskeee/pkg-upgrade/main/install.ps1 | iex
+```
+
+Or via Scoop:
+
+```powershell
+scoop bucket add liskeee https://github.com/liskeee/scoop-bucket
+scoop install pkg-upgrade
+```
+
 ### Uninstall
 
 ```bash
