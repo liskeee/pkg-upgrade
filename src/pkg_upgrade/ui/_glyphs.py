@@ -4,18 +4,26 @@ from dataclasses import dataclass
 
 from pkg_upgrade.status import ManagerStatus
 
+SPINNER_FRAMES_UNICODE: tuple[str, ...] = ("⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏")
+SPINNER_FRAMES_ASCII: tuple[str, ...] = ("|", "/", "-", "\\")
+
 
 @dataclass(frozen=True)
 class GlyphTable:
     statuses: dict[ManagerStatus, str]
+    spinner_frames: tuple[str, ...]
+    use_unicode: bool
 
     def status(self, s: ManagerStatus) -> str:
         return self.statuses[s]
 
+    def spinner(self, tick: int) -> str:
+        return self.spinner_frames[tick % len(self.spinner_frames)]
+
     @classmethod
     def unicode(cls) -> GlyphTable:
         return cls(
-            {
+            statuses={
                 ManagerStatus.PENDING: "⏳ queued",
                 ManagerStatus.CHECKING: "⧗ checking",
                 ManagerStatus.AWAITING_CONFIRM: "⏸ awaiting confirm",
@@ -24,13 +32,15 @@ class GlyphTable:
                 ManagerStatus.SKIPPED: "⏭ skipped",
                 ManagerStatus.UNAVAILABLE: "∅ unavailable",
                 ManagerStatus.ERROR: "⚠ error",
-            }
+            },
+            spinner_frames=SPINNER_FRAMES_UNICODE,
+            use_unicode=True,
         )
 
     @classmethod
     def ascii(cls) -> GlyphTable:
         return cls(
-            {
+            statuses={
                 ManagerStatus.PENDING: ". queued",
                 ManagerStatus.CHECKING: "- checking",
                 ManagerStatus.AWAITING_CONFIRM: "P awaiting confirm",
@@ -39,7 +49,9 @@ class GlyphTable:
                 ManagerStatus.SKIPPED: "s skipped",
                 ManagerStatus.UNAVAILABLE: "x unavailable",
                 ManagerStatus.ERROR: "! error",
-            }
+            },
+            spinner_frames=SPINNER_FRAMES_ASCII,
+            use_unicode=False,
         )
 
 

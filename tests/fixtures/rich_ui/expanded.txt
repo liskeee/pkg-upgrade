@@ -1,11 +1,14 @@
-+------------------------- pkg-upgrade  0:42 elapsed --------------------------+
-|   KEY     MANAGER          STATUS              PROGRESS    DURATION          |
-| > brew    H Homebrew        > upgrading         3/12        0:18             |
++-------------------------------- pkg-upgrade ---------------------------------+
+| ████░░░░░░  7/16 packages  2 mgrs left  0:42 elapsed                         |
+|                                                                              |
+|   MANAGER         STATUS               PROGRESS      PKGS       DUR          |
+| > H Homebrew     | > upgrading        ██░░░░░░░░  3/12      0:18             |
 |                                                                              |
 |   [brew] log:                                                                |
 |     ok wget                                                                  |
 |     ok jq                                                                    |
 |                                                                              |
-|   cask    C Casks           . queued            --          --               |
-|   pip     P pip             v done              4/4         0:09             |
+|   C Casks        . queued             ░░░░░░░░░░  --          --             |
+|   P pip          v done               ██████████  4/4       0:09  v          |
 +------------------------------------------------------------------------------+
+  j/k move   enter expand   y confirm   s skip   q quit
