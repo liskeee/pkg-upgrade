@@ -23,7 +23,7 @@ jobs:
       id-token: write
     environment:
       name: pypi
-      url: https://pypi.org/project/mac-upgrade/
+      url: https://pypi.org/project/pkg-upgrade/
     steps:
       - uses: actions/checkout@v6
         with:
@@ -53,6 +53,14 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: semantic-release publish
+
+      - name: Upload wheel to release
+        if: hashFiles('dist/*.whl') != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG=$(git describe --tags --abbrev=0)
+          gh release upload "$TAG" dist/*.whl --clobber
 
       - name: Publish to PyPI
         if: hashFiles('dist/*') != ''
