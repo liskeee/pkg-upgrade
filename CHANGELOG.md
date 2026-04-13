@@ -1,6 +1,96 @@
 # CHANGELOG
 
 
+## v1.0.0 (2026-04-13)
+
+### Features
+
+- Pkg-upgrade cross-platform foundation (Plan 1)
+  ([#14](https://github.com/liskeee/mac-upgrade/pull/14),
+  [`3d4f609`](https://github.com/liskeee/mac-upgrade/commit/3d4f609c45f6909fbe497516e1955c511cb85930))
+
+* docs: add cross-platform (pkg-upgrade) design spec
+
+Captures approved design for renaming mac-upgrade to pkg-upgrade with full Linux/Windows parity,
+  declarative YAML manager manifests, entry-point plugins, and topo-sorted scheduling via
+  depends_on.
+
+Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+
+* docs: add Plan 1 (foundation) for pkg-upgrade cross-platform work
+
+10-task TDD plan covering rename, extended PackageManager ABC, 3-path registry, DeclarativeManager +
+  YAML loader, parser preset framework, topo-sort scheduler, platform detection, platformdirs
+  config, and CLI grouping/--show-graph/--max-parallel.
+
+* refactor!: rename mac_upgrade to pkg_upgrade
+
+BREAKING CHANGE: package, CLI command, and PyPI name change from mac-upgrade to pkg-upgrade. Adds
+  pkgup short alias.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
+* feat: add platform detection helper
+
+* feat: extend PackageManager ABC with platforms/depends_on/install_hint
+
+* feat: add manager registry with decorator + entry-point discovery
+
+Three registration paths funnel through a single registry: - @register_manager decorator on built-in
+  classes - importlib.metadata entry_points under group "pkg_upgrade.managers" - YAML manifests
+  (stub loader; real impl in Task 6)
+
+Platform gating (platforms vs current_os) happens in the registry. Replaces hardcoded ALL_MANAGERS /
+  get_managers with discover_managers() and select_managers(). All call sites in app.py,
+  executor.py, onboarding.py updated.
+
+* feat: add parser preset framework with generic_regex fallback
+
+* feat: add DeclarativeManager and YAML manifest loader
+
+Implements Task 6: replaces the declarative.py stub with a full DeclarativeManager class + YAML
+  loader, adds env support to run_command, and includes a TDD test suite covering load, parse,
+  upgrade, availability, and validation.
+
+* feat: topologically schedule managers by depends_on
+
+Replace hardcoded SEQUENTIAL_CHAIN/INDEPENDENT constants with a Kahn's-algorithm topo sort in
+  Executor.from_managers; each level becomes a parallel ExecutionGroup, dependency cycles raise
+  ConfigurationError, and missing deps are silently dropped.
+
+* feat: move config to platformdirs and add new keys
+
+Add Config dataclass with disabled_managers, per_manager, and max_parallel fields loaded from YAML
+  via platformdirs. Rename legacy JSON loader to load_config_dict to preserve backward compat;
+  update cli.py accordingly.
+
+* feat: CLI --list grouping, --show-graph, --max-parallel
+
+* feat: add --self-update with auto-detected install method
+
+Detects pipx/brew/scoop/install_sh/install_ps1/editable/pip install paths from sys.executable and
+  delegates upgrade to the right tool.
+
+* chore: rename remaining mac-upgrade UI strings to pkg-upgrade
+
+- argparse prog, --version, log filename - TUI title and header; MacUpgradeApp -> PkgUpgradeApp -
+  onboarding welcome message - CLAUDE.md project blurb refreshed for cross-platform + registry
+
+* ci: update pre-commit mypy deps and smoke binary for pkg-upgrade rename
+
+- Add types-PyYAML and platformdirs to pre-commit mypy additional_dependencies - Switch smoke job
+  from mac-upgrade to pkg-upgrade binary
+
+---------
+
+Co-authored-by: Claude Opus 4.6 <noreply@anthropic.com>
+
+### Breaking Changes
+
+- Package, CLI command, and PyPI name change from mac-upgrade to pkg-upgrade. Adds pkgup short
+  alias.
+
+
 ## v0.1.1 (2026-04-12)
 
 ### Build System
