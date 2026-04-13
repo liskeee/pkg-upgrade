@@ -20,6 +20,6 @@ repos:
     rev: v1.20.0
     hooks:
       - id: mypy
-        additional_dependencies: [textual>=3.0.0, pytest>=8.0, pytest-asyncio>=0.24]
+        additional_dependencies: [textual>=3.0.0, pytest>=8.0, pytest-asyncio>=0.24, types-PyYAML>=6.0, platformdirs>=4.0]
         args: [--config-file=pyproject.toml]
         pass_filenames: false
