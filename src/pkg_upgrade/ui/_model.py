@@ -15,6 +15,8 @@ class Row:
     total: int
     duration_s: int
     log: list[str] = field(default_factory=list)
+    error: str | None = None
+    failed: int = 0
 
 
 @dataclass
