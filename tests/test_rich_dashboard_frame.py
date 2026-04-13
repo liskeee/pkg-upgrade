@@ -22,8 +22,8 @@ def _assert_golden(name: str, output: str) -> None:
     path = FIXTURES / f"{name}.txt"
     if not path.exists():
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(output)
-    assert output == path.read_text()
+        path.write_text(output, encoding="utf-8")
+    assert output == path.read_text(encoding="utf-8")
 
 
 def _base_rows() -> list[Row]:
