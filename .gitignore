@@ -12,6 +12,7 @@ coverage.xml
 
 build/
 dist/
+*.whl
 *.egg-info/
 *.egg
 
