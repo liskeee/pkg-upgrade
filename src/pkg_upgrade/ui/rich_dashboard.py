@@ -227,7 +227,7 @@ class RichDashboardUI:
                 model = self._build_model(executor)
         return model
 
-    async def run(self, executor: Any, *, auto_yes: bool, dry_run: bool) -> None:
+    async def run(self, executor: Any, *, auto_yes: bool, dry_run: bool) -> None:  # noqa: PLR0912
         await executor.check_all()
 
         if dry_run:
@@ -235,15 +235,14 @@ class RichDashboardUI:
                 s.status = ManagerStatus.DONE
             return
 
-        if auto_yes:
-            for key, s in list(executor.states.items()):
-                if s.outdated:
-                    await executor.upgrade_manager(key)
-            return
-
         model = self._build_model(executor)
 
         if self._quiet:
+            if auto_yes:
+                for key, s in list(executor.states.items()):
+                    if s.outdated:
+                        await executor.upgrade_manager(key)
+                return
             while not model.all_done():
                 key = await self._read_key_soft()
                 if key is None:
@@ -259,7 +258,7 @@ class RichDashboardUI:
 
         def _frame() -> Any:
             return build_frame(
-                model,
+                self._build_model(executor),
                 self._glyphs,
                 elapsed_seconds=int(time.monotonic() - start_time),
                 tick=tick,
@@ -270,6 +269,19 @@ class RichDashboardUI:
             refresh_per_second=8,
             transient=False,
         ) as live:
+            if auto_yes:
+                pending = [k for k, s in executor.states.items() if s.outdated]
+                for key in pending:
+                    task = asyncio.create_task(executor.upgrade_manager(key))
+                    while not task.done():
+                        await asyncio.sleep(0.125)
+                        tick += 1
+                        live.update(_frame())
+                    await task
+                tick += 1
+                live.update(_frame())
+                return
+
             while not model.all_done():
                 key = await self._read_key_soft()
                 if key is None:
