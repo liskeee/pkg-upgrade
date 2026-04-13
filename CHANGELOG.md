@@ -1,6 +1,36 @@
 # CHANGELOG
 
 
+## v1.5.2 (2026-04-13)
+
+### Bug Fixes
+
+- **ui**: Render Live dashboard in auto_yes mode
+  ([#27](https://github.com/liskeee/pkg-upgrade/pull/27),
+  [`b419a8c`](https://github.com/liskeee/pkg-upgrade/commit/b419a8cb87fc1a79d00a8dd237374cb26f2c6b68))
+
+* fix(ui): render initial frame and tick elapsed clock in live dashboard
+
+Switch Live to auto_refresh (default) so the initial frame renders on context enter and the elapsed
+  clock ticks at 8 Hz between keypresses. Previously auto_refresh=False meant nothing drew until the
+  first keypress, and if check_all() produced no outdated packages the loop exited without ever
+  rendering — the UI appeared blank.
+
+Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+
+* fix(ui): render Live dashboard when auto_yes is set via config
+
+auto_yes short-circuited to a headless upgrade loop before any UI was drawn, so users with
+  auto_yes=true in ~/.mac-upgrade saw a blank screen. Fold auto_yes into the Live-wrapped path: kick
+  off each upgrade as a task and tick the frame while it runs, keeping the spinner animated.
+
+* chore(ui): silence PLR0912 in dashboard run loop
+
+---------
+
+Co-authored-by: Claude Opus 4.6 <noreply@anthropic.com>
+
+
 ## v1.5.1 (2026-04-13)
 
 ### Bug Fixes
