@@ -6,6 +6,7 @@ from typing import Any
 
 from rich import box
 from rich.console import Group, RenderableType
+from rich.live import Live
 from rich.panel import Panel
 from rich.text import Text
 
@@ -241,11 +242,34 @@ class RichDashboardUI:
 
         model = self._build_model(executor)
 
-        while not model.all_done():
-            key = await self._read_key_soft()
-            if key is None:
-                break
-            result = await self._handle_key(key, model, executor)
-            if result is None:
-                break
-            model = result
+        if self._quiet:
+            while not model.all_done():
+                key = await self._read_key_soft()
+                if key is None:
+                    break
+                result = await self._handle_key(key, model, executor)
+                if result is None:
+                    break
+                model = result
+            return
+
+        tick = 0
+        with Live(
+            build_frame(model, self._glyphs, elapsed_seconds=0, tick=tick),
+            refresh_per_second=8,
+            transient=False,
+            auto_refresh=False,
+        ) as live:
+            while not model.all_done():
+                key = await self._read_key_soft()
+                if key is None:
+                    break
+                result = await self._handle_key(key, model, executor)
+                if result is None:
+                    break
+                model = result
+                tick += 1
+                live.update(
+                    build_frame(model, self._glyphs, elapsed_seconds=0, tick=tick),
+                    refresh=True,
+                )
