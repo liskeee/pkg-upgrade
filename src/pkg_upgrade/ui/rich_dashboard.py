@@ -63,7 +63,7 @@ def build_frame(
         rows_renderables.append(Text(f"  filter: /{model.filter_text}"))
 
     title = f"pkg-upgrade  {_fmt_duration(elapsed_seconds)} elapsed"
-    return Panel(Group(*rows_renderables), title=title, border_style="cyan", box=box.ROUNDED)
+    return Panel(Group(*rows_renderables), title=title, border_style="cyan", box=box.ASCII)
 
 
 class RichDashboardUI:
