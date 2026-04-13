@@ -128,7 +128,7 @@ def load_declarative_dir(directory: Path | None) -> None:
     if not directory.exists():
         return
     for yml in sorted(directory.glob("*.yaml")):
-        data = yaml.safe_load(yml.read_text())
+        data = yaml.safe_load(yml.read_text(encoding="utf-8"))
         manifest = _Manifest.from_dict(data)
         cls = _build_class(manifest)
         register_manager(cls)

@@ -41,7 +41,7 @@ def is_windows_admin() -> bool:
     if current_os() != "windows":
         return False
     try:
-        return bool(ctypes.windll.shell32.IsUserAnAdmin())  # type: ignore[attr-defined]
+        return bool(ctypes.windll.shell32.IsUserAnAdmin())  # type: ignore[attr-defined,unused-ignore]
     except (AttributeError, OSError):
         return False
 

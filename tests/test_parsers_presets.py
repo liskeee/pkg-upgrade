@@ -8,7 +8,7 @@ FIXTURES = Path(__file__).parent / "fixtures" / "parsers"
 
 
 def _load(name: str) -> str:
-    return (FIXTURES / f"{name}.txt").read_text()
+    return (FIXTURES / f"{name}.txt").read_text(encoding="utf-8")
 
 
 def test_apt_upgradable_parses_three_packages() -> None:

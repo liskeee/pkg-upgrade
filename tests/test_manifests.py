@@ -34,7 +34,7 @@ def test_all_expected_manifests_shipped() -> None:
 
 @pytest.mark.parametrize("path", _all_yaml(), ids=lambda p: p.stem)
 def test_manifest_schema_valid(path: Path) -> None:
-    data = yaml.safe_load(path.read_text())
+    data = yaml.safe_load(path.read_text(encoding="utf-8"))
     manifest = _Manifest.from_dict(data)
     assert manifest.key == path.stem
     assert manifest.platforms
