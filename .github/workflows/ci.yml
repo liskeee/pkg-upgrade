@@ -192,3 +192,24 @@ jobs:
       - name: Test formula
         if: steps.guard.outputs.skip != 'true'
         run: brew test liskeee/pkg-upgrade-ci/pkg-upgrade
+
+  completion-shells:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install shells (ubuntu)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y zsh fish
+      - name: Install fish (macOS)
+        if: runner.os == 'macOS'
+        run: brew install fish
+      - run: python -m pip install -e ".[dev]"
+      - run: pytest tests/test_completion.py tests/test_completion_shells.py tests/test_installer_completion.py -v
