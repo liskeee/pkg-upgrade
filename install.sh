@@ -84,3 +84,60 @@ esac
 VERSION="$("$INSTALLED_BIN" --version)"
 log "✓ Installed ${VERSION}"
 log "Run: pkg-upgrade --onboard (first-time setup) or pkg-upgrade"
+
+install_completion() {
+    local shell_name
+    shell_name="$(basename "${SHELL:-bash}")"
+    # Locate the packaged completions dir. Try pipx venv first, then self-managed.
+    local pkg_dir=""
+    local candidate
+    for candidate in \
+        "${PKG_UPGRADE_PREFIX:-}/bin/python" \
+        "$HOME/.local/pipx/venvs/pkg-upgrade/bin/python" \
+        "$HOME/.local/share/pkg-upgrade/venv/bin/python" \
+        "$(command -v python3 2>/dev/null)"; do
+        if [ -n "$candidate" ] && [ -x "$candidate" ]; then
+            pkg_dir="$("$candidate" -c 'import pkg_upgrade, os; print(os.path.dirname(pkg_upgrade.__file__))' 2>/dev/null || true)"
+            [ -n "$pkg_dir" ] && break
+        fi
+    done
+    [ -z "$pkg_dir" ] && return 0
+    local comp_dir="$pkg_dir/completions"
+    [ -d "$comp_dir" ] || return 0
+
+    case "$shell_name" in
+        bash)
+            # Target: $HOME/.local/share/bash-completion/completions/pkg-upgrade
+            local dest="$HOME/.local/share/bash-completion/completions"
+            mkdir -p "$dest"
+            cp -f "$comp_dir/pkg-upgrade.bash" "$dest/pkg-upgrade"
+            echo "Installed bash completion -> $dest/pkg-upgrade"
+            ;;
+        zsh)
+            # Target: $HOME/.zsh/completions/_pkg-upgrade
+            local dest="$HOME/.zsh/completions"
+            mkdir -p "$dest"
+            cp -f "$comp_dir/_pkg-upgrade" "$dest/_pkg-upgrade"
+            local rc="$HOME/.zshrc"
+            local line='fpath+=("$HOME/.zsh/completions")'
+            if [ -f "$rc" ] && ! grep -Fq "$line" "$rc"; then
+                printf '\n# Added by pkg-upgrade installer\n%s\nautoload -Uz compinit && compinit\n' "$line" >> "$rc"
+            fi
+            echo "Installed zsh completion -> $dest/_pkg-upgrade"
+            ;;
+        fish)
+            # Target: $HOME/.config/fish/completions/pkg-upgrade.fish
+            local dest="$HOME/.config/fish/completions"
+            mkdir -p "$dest"
+            cp -f "$comp_dir/pkg-upgrade.fish" "$dest/pkg-upgrade.fish"
+            echo "Installed fish completion -> $dest/pkg-upgrade.fish"
+            ;;
+        *)
+            echo "Shell '$shell_name' unsupported for auto-completion install."
+            echo "Run: pkg-upgrade completion <bash|zsh|fish|powershell>  to print a script."
+            ;;
+    esac
+    echo "Restart your shell (or 'exec \$SHELL') to activate completion."
+}
+
+install_completion

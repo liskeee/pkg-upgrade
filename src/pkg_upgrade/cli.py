@@ -40,6 +40,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--log-dir", type=str, default=None, metavar="PATH")
     parser.add_argument("--list", action="store_true", dest="list_managers")
     parser.add_argument(
+        "--plain",
+        action="store_true",
+        help="With --list, print bare manager keys (one per line) for shell completion.",
+    )
+    parser.add_argument(
         "--onboard",
         action="store_true",
         help="Run the configuration wizard and exit",
@@ -63,6 +68,9 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Upgrade pkg-upgrade itself",
     )
+    subparsers = parser.add_subparsers(dest="subcommand")
+    comp = subparsers.add_parser("completion", help="Print shell completion script")
+    comp.add_argument("shell", choices=["bash", "zsh", "fish", "powershell"])
     return parser
 
 
@@ -156,6 +164,17 @@ def _print_graph(skip: set[str] | None = None, only: set[str] | None = None) -> 
     return 0
 
 
+def _handle_list(args: argparse.Namespace) -> int:
+    """Dispatch `--list` to either the grouped view or the plain completion view."""
+    if args.plain:
+        from pkg_upgrade.completion import plain_list_managers  # noqa: PLC0415
+
+        for key in plain_list_managers(write_cache=True):
+            print(key)
+        return 0
+    return _print_list(skip=args.skip, only=args.only)
+
+
 def _run_onboarding_wizard(initial: dict[str, Any]) -> dict[str, Any] | None:
     """Launch the Textual onboarding screen. Returns saved config or None."""
     result: dict[str, Any] | None = None
@@ -173,8 +192,13 @@ def _run_onboarding_wizard(initial: dict[str, Any]) -> dict[str, Any] | None:
     return result
 
 
-def main() -> int:
+def main() -> int:  # noqa: PLR0911
     args = parse_args()
+
+    if args.subcommand == "completion":
+        from pkg_upgrade.completion import completion_subcommand  # noqa: PLC0415
+
+        return completion_subcommand(args.shell)
 
     if args.self_update:
         return run_self_update()
@@ -190,7 +214,7 @@ def main() -> int:
         return 0
 
     if args.list_managers:
-        return _print_list(skip=args.skip, only=args.only)
+        return _handle_list(args)
 
     if args.show_graph:
         return _print_graph(skip=args.skip, only=args.only)

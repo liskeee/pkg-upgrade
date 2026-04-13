@@ -1,0 +1,153 @@
+from __future__ import annotations
+
+import os
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+
+import pytest
+
+COMPLETIONS = Path(__file__).resolve().parent.parent / "src" / "pkg_upgrade" / "completions"
+
+posix_only = pytest.mark.skipif(sys.platform == "win32", reason="POSIX-only shell harness")
+
+
+def _bash_complete(
+    line: str, cache_content: str = "brew\ncask\ngem\nnpm\npip\nsystem\n"
+) -> list[str]:
+    bash = shutil.which("bash")
+    if not bash:
+        pytest.skip("bash not installed")
+    script = COMPLETIONS / "pkg-upgrade.bash"
+    cache = Path(os.environ["XDG_CACHE_HOME"]) / "pkg-upgrade" / "managers.list"
+    cache.parent.mkdir(parents=True, exist_ok=True)
+    cache.write_text(cache_content, encoding="utf-8")
+
+    harness = f"""
+        source {script}
+        COMP_LINE={line!r}
+        COMP_POINT=${{#COMP_LINE}}
+        read -a COMP_WORDS <<<"$COMP_LINE"
+        COMP_CWORD=$((${{#COMP_WORDS[@]}} - 1))
+        if [[ "$COMP_LINE" == *" " ]]; then
+          COMP_WORDS+=("")
+          COMP_CWORD=$((COMP_CWORD + 1))
+        fi
+        _pkg_upgrade_completions
+        printf '%s\\n' "${{COMPREPLY[@]}}"
+    """
+    out = subprocess.run(
+        [bash, "-c", harness],
+        check=True,
+        capture_output=True,
+        text=True,
+        env={**os.environ, "PATH": os.environ.get("PATH", "")},
+    )
+    return [ln for ln in out.stdout.splitlines() if ln]
+
+
+@pytest.fixture(autouse=True)
+def _isolated_cache(tmp_path, monkeypatch):
+    monkeypatch.setenv("XDG_CACHE_HOME", str(tmp_path))
+
+
+@posix_only
+def test_bash_flag_completion():
+    candidates = _bash_complete("pkg-upgrade --")
+    for flag in ("--only", "--skip", "--yes", "--dry-run", "--list", "--self-update"):
+        assert flag in candidates
+
+
+@posix_only
+def test_bash_manager_completion_only():
+    candidates = _bash_complete("pkg-upgrade --only br")
+    assert "brew" in candidates
+    assert "cask" not in candidates
+
+
+@posix_only
+def test_bash_manager_completion_skip():
+    candidates = _bash_complete("pkg-upgrade --skip p")
+    assert "pip" in candidates
+
+
+@posix_only
+def test_bash_comma_separated():
+    candidates = _bash_complete("pkg-upgrade --only brew,c")
+    assert "cask" in candidates
+    assert "brew" not in candidates
+
+
+@posix_only
+def test_zsh_script_is_syntactically_valid():
+    zsh = shutil.which("zsh")
+    if not zsh:
+        pytest.skip("zsh not installed")
+    script = COMPLETIONS / "_pkg-upgrade"
+    r = subprocess.run([zsh, "-n", str(script)], capture_output=True, text=True, check=False)
+    assert r.returncode == 0, r.stderr
+
+
+@posix_only
+def test_zsh_script_lists_manager_keys_in_source():
+    text = (COMPLETIONS / "_pkg-upgrade").read_text(encoding="utf-8")
+    assert "managers.list" in text
+    for k in ("brew", "cask", "pip", "npm", "gem", "system"):
+        assert k in text
+
+
+@posix_only
+def test_fish_script_is_syntactically_valid():
+    fish = shutil.which("fish")
+    if not fish:
+        pytest.skip("fish not installed")
+    script = COMPLETIONS / "pkg-upgrade.fish"
+    r = subprocess.run([fish, "-n", str(script)], capture_output=True, text=True, check=False)
+    assert r.returncode == 0, r.stderr
+
+
+@posix_only
+def test_fish_manager_completion():
+    fish = shutil.which("fish")
+    if not fish:
+        pytest.skip("fish not installed")
+    cache = Path(os.environ["XDG_CACHE_HOME"]) / "pkg-upgrade" / "managers.list"
+    cache.parent.mkdir(parents=True, exist_ok=True)
+    cache.write_text("brew\ncask\ngem\nnpm\npip\nsystem\n", encoding="utf-8")
+    script = COMPLETIONS / "pkg-upgrade.fish"
+    r = subprocess.run(
+        [fish, "-c", f"source {script}; complete -C 'pkg-upgrade --only '"],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    assert "brew" in r.stdout
+    assert "pip" in r.stdout
+
+
+def test_powershell_script_references_register_completer():
+    text = (COMPLETIONS / "pkg-upgrade.ps1").read_text(encoding="utf-8")
+    assert "Register-ArgumentCompleter" in text
+    assert "pkg-upgrade" in text
+    for k in ("brew", "cask", "pip", "npm", "gem", "system"):
+        assert k in text
+
+
+def test_powershell_script_parses():
+    pwsh = shutil.which("pwsh") or shutil.which("powershell")
+    if not pwsh:
+        pytest.skip("pwsh not installed")
+    script = COMPLETIONS / "pkg-upgrade.ps1"
+    r = subprocess.run(
+        [
+            pwsh,
+            "-NoProfile",
+            "-Command",
+            f"$null = [ScriptBlock]::Create((Get-Content -Raw '{script}'))",
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert r.returncode == 0, r.stderr

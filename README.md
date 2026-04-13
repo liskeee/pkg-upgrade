@@ -88,6 +88,29 @@ pkg-upgrade --dry-run            # preview only
 pkg-upgrade --list               # detect installed managers and exit
 ```
 
+## Shell Completion
+
+Tab completion is installed automatically by every first-party installer
+(Homebrew, Scoop, `install.sh`, `install.ps1`). If you installed via
+`pipx` or `pip`, set it up manually:
+
+```bash
+# bash
+pkg-upgrade completion bash  | sudo tee /etc/bash_completion.d/pkg-upgrade
+
+# zsh (ensure ~/.zsh/completions is on your fpath)
+pkg-upgrade completion zsh   > "$HOME/.zsh/completions/_pkg-upgrade"
+
+# fish
+pkg-upgrade completion fish  > ~/.config/fish/completions/pkg-upgrade.fish
+
+# PowerShell (add to $PROFILE)
+pkg-upgrade completion powershell | Out-String | Invoke-Expression
+```
+
+Third-party plugin managers appear in Tab completion after the next
+`pkg-upgrade --list` call, which refreshes the cached manager list.
+
 ## License
 
 MIT
