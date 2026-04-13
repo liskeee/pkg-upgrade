@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import sys
+import time
 from typing import Any
 
 from rich import box
@@ -254,8 +255,11 @@ class RichDashboardUI:
             return
 
         tick = 0
+        start_time = time.monotonic()
         with Live(
-            build_frame(model, self._glyphs, elapsed_seconds=0, tick=tick),
+            build_frame(
+                model, self._glyphs, elapsed_seconds=int(time.monotonic() - start_time), tick=tick
+            ),
             refresh_per_second=8,
             transient=False,
             auto_refresh=False,
@@ -270,6 +274,11 @@ class RichDashboardUI:
                 model = result
                 tick += 1
                 live.update(
-                    build_frame(model, self._glyphs, elapsed_seconds=0, tick=tick),
+                    build_frame(
+                        model,
+                        self._glyphs,
+                        elapsed_seconds=int(time.monotonic() - start_time),
+                        tick=tick,
+                    ),
                     refresh=True,
                 )
