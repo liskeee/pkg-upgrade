@@ -23,3 +23,17 @@ def test_pick_glyph_table_falls_back_for_ascii_encoding() -> None:
     assert pick_glyph_table("ascii").status(ManagerStatus.DONE) == GlyphTable.ascii().status(
         ManagerStatus.DONE
     )
+
+
+def test_unicode_spinner_frames_present() -> None:
+    t = GlyphTable.unicode()
+    assert t.spinner_frames == ("⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏")
+
+
+def test_ascii_spinner_frames_present() -> None:
+    t = GlyphTable.ascii()
+    assert t.spinner_frames == ("|", "/", "-", "\\")
+
+
+def test_pick_glyph_table_ascii_has_ascii_spinner() -> None:
+    assert pick_glyph_table("ascii").spinner_frames[0] == "|"
