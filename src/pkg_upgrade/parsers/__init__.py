@@ -31,4 +31,5 @@ from pkg_upgrade.parsers import (  # noqa: E402, F401
     generic,
     pacman,
     snap,
+    winget,
 )

@@ -61,3 +61,13 @@ def test_snap_refresh_list_skips_header() -> None:
         ("firefox", "123.0.1-1"),
         ("snapd", "2.61.2"),
     ]
+
+
+def test_winget_upgrade_parses_fixed_width_table() -> None:
+    parser = get_parser("winget_upgrade")
+    pkgs = parser(_load("winget"))
+    assert [(p.name, p.current_version, p.latest_version) for p in pkgs] == [
+        ("Git.Git", "2.43.0", "2.44.0"),
+        ("Microsoft.PowerShell", "7.4.0.0", "7.4.1.0"),
+        ("Python.Python.3.12", "3.12.1150.0", "3.12.2150.0"),
+    ]
