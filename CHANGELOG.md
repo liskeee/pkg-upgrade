@@ -1,6 +1,31 @@
 # CHANGELOG
 
 
+## v1.2.1 (2026-04-13)
+
+### Bug Fixes
+
+- **self-update**: Don't resolve symlinks so pipx venv Python is detected
+  ([#18](https://github.com/liskeee/pkg-upgrade/pull/18),
+  [`9a92707`](https://github.com/liskeee/pkg-upgrade/commit/9a92707b8743930e70f3512d4dd85d5cc6238688))
+
+Path(sys.executable).resolve() follows the pipx venv's python symlink out to the underlying system
+  interpreter, which breaks the 'pipx/venvs/pkg-upgrade' path signature match and falls through to
+  the generic 'pip' upgrade command.
+
+### Chores
+
+- **scoop**: Bump to v1.2.0 ([#17](https://github.com/liskeee/pkg-upgrade/pull/17),
+  [`8428b3d`](https://github.com/liskeee/pkg-upgrade/commit/8428b3d0bda16b8d535da2fbe4cfeb9ec3bde475))
+
+Co-authored-by: liskeee <2394154+liskeee@users.noreply.github.com>
+
+### Continuous Integration
+
+- **scoop-bump**: Move secret check from if: to runtime env guard
+  ([`58073d7`](https://github.com/liskeee/pkg-upgrade/commit/58073d7a837ab49b51c7248acd8af6d51f876718))
+
+
 ## v1.2.0 (2026-04-13)
 
 ### Features
