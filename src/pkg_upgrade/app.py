@@ -24,10 +24,10 @@ class AppPhase(StrEnum):
     SUMMARY = "summary"
 
 
-class MacUpgradeApp(App[None]):
-    """TUI dashboard for upgrading macOS packages."""
+class PkgUpgradeApp(App[None]):
+    """TUI dashboard for upgrading installed package managers."""
 
-    TITLE = "mac-upgrade"
+    TITLE = "pkg-upgrade"
     CSS = """
     #header-bar {
         dock: top;
@@ -85,7 +85,7 @@ class MacUpgradeApp(App[None]):
     def compose(self) -> ComposeResult:
         today = date.today().strftime("%d %b %Y")
         yield Static(
-            f"🚀 mac-upgrade                                           {today}",
+            f"🚀 pkg-upgrade                                           {today}",
             id="header-bar",
         )
         with VerticalScroll(id="managers-container"):
@@ -248,7 +248,7 @@ class MacUpgradeApp(App[None]):
         if total_skipped:
             summary += f", {total_skipped} skipped"
 
-        title = "mac-upgrade complete" if total_failed == 0 else "mac-upgrade finished with errors"
+        title = "pkg-upgrade complete" if total_failed == 0 else "pkg-upgrade finished with errors"
         await self.notifier.send_notification(title, summary)
 
         footer = self.query_one("#footer-help", Static)

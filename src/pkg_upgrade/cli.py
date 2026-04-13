@@ -10,7 +10,7 @@ from typing import Any
 from textual.app import App, ComposeResult
 
 from pkg_upgrade import __version__
-from pkg_upgrade.app import MacUpgradeApp
+from pkg_upgrade.app import PkgUpgradeApp
 from pkg_upgrade.config import (
     DEFAULT_CONFIG,
     config_exists,
@@ -24,8 +24,8 @@ from pkg_upgrade.self_update import run_self_update
 def build_parser() -> argparse.ArgumentParser:
     """Build and return the argument parser (extracted for testability)."""
     parser = argparse.ArgumentParser(
-        prog="mac-upgrade",
-        description="Upgrade all macOS package managers with a beautiful TUI dashboard",
+        prog="pkg-upgrade",
+        description="Cross-platform TUI that upgrades every package manager on your system",
     )
     parser.add_argument(
         "--skip", type=lambda s: set(s.split(",")), default=None, metavar="MANAGERS"
@@ -56,7 +56,7 @@ def build_parser() -> argparse.ArgumentParser:
         metavar="N",
         help="Cap per-level concurrency",
     )
-    parser.add_argument("--version", action="version", version=f"mac-upgrade {__version__}")
+    parser.add_argument("--version", action="version", version=f"pkg-upgrade {__version__}")
     parser.add_argument(
         "--self-update",
         dest="self_update",
@@ -75,7 +75,7 @@ def get_log_path(log_enabled: bool, log_dir: str | None) -> str | None:
         return None
     base = Path(log_dir).expanduser() if log_dir else Path.home()
     today = date.today().isoformat()
-    return str(base / f"mac-upgrade-{today}.log")
+    return str(base / f"pkg-upgrade-{today}.log")
 
 
 def resolve_settings(args: argparse.Namespace, cfg: dict[str, Any]) -> dict[str, Any]:
@@ -214,7 +214,7 @@ def main() -> int:
 
     settings = resolve_settings(args, cfg)
 
-    app = MacUpgradeApp(
+    app = PkgUpgradeApp(
         skip=settings["skip"],
         only=settings["only"],
         auto_yes=settings["auto_yes"],

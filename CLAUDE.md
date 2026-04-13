@@ -4,7 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-`pkg-upgrade` is a Textual-based TUI that orchestrates upgrades across every macOS package manager installed (Homebrew formulas/casks, pip, npm, gem, `softwareupdate`). macOS-only, Python 3.12+.
+`pkg-upgrade` is a cross-platform (macOS/Linux/Windows) Textual TUI and CLI that orchestrates upgrades across every installed package manager. Python 3.12+.
+
+Managers register through one of three paths: `@register_manager` decorator (built-ins), `pkg_upgrade.managers` entry points (third-party plugins), or YAML manifests under `src/pkg_upgrade/managers/declarative/` (no Python required for CLI-wrapping managers). Scheduling is topo-sorted from each manager's `depends_on`.
 
 ## Common commands
 

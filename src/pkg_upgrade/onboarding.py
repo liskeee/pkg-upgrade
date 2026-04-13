@@ -88,7 +88,7 @@ class OnboardingScreen(Screen[dict[str, Any] | None]):
     def compose(self) -> ComposeResult:
         yield Header(show_clock=False)
         with Vertical(id="onboarding-box"):
-            yield Static("Welcome to mac-upgrade — let's get you set up.", id="step-title")
+            yield Static("Welcome to pkg-upgrade — let's get you set up.", id="step-title")
             with ContentSwitcher(initial=STEP_IDS[0], id="switcher"):
                 with VerticalScroll(id="step-managers", classes="step-panel"):
                     yield Label("Which package managers do you want to upgrade by default?")
