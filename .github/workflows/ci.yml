@@ -178,17 +178,17 @@ jobs:
       - name: Skip if formula has placeholder SHAs
         id: guard
         run: |
-          if grep -q REPLACE_WITH Formula/mac-upgrade.rb; then
+          if grep -q REPLACE_WITH Formula/pkg-upgrade.rb; then
             echo "Formula still has REPLACE_WITH placeholders; skipping install/test."
             echo "skip=true" >> "$GITHUB_OUTPUT"
           fi
       - name: Install formula via ephemeral local tap
         if: steps.guard.outputs.skip != 'true'
         run: |
-          TAP_DIR="$(brew --repo liskeee/mac-upgrade-ci)"
+          TAP_DIR="$(brew --repo liskeee/pkg-upgrade-ci)"
           mkdir -p "$TAP_DIR/Formula"
-          cp Formula/mac-upgrade.rb "$TAP_DIR/Formula/"
-          brew install --build-from-source liskeee/mac-upgrade-ci/mac-upgrade
+          cp Formula/pkg-upgrade.rb "$TAP_DIR/Formula/"
+          brew install --build-from-source liskeee/pkg-upgrade-ci/pkg-upgrade
       - name: Test formula
         if: steps.guard.outputs.skip != 'true'
-        run: brew test liskeee/mac-upgrade-ci/mac-upgrade
+        run: brew test liskeee/pkg-upgrade-ci/pkg-upgrade
