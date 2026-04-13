@@ -1,11 +1,17 @@
 from __future__ import annotations
 
+import asyncio
+import sys
+from typing import Any
+
 from rich.console import Group, RenderableType
 from rich.panel import Panel
 from rich.text import Text
 
-from pkg_upgrade.ui._glyphs import GlyphTable
-from pkg_upgrade.ui._model import UIModel
+from pkg_upgrade.status import ACTIVE_STATUSES, ManagerStatus
+from pkg_upgrade.ui._glyphs import GlyphTable, pick_glyph_table
+from pkg_upgrade.ui._input import FakeInput, KeyInput, RealInput
+from pkg_upgrade.ui._model import Row, UIModel
 
 
 def _fmt_duration(s: int) -> str:
@@ -57,3 +63,87 @@ def build_frame(
 
     title = f"pkg-upgrade  {_fmt_duration(elapsed_seconds)} elapsed"
     return Panel(Group(*rows_renderables), title=title, border_style="cyan")
+
+
+class RichDashboardUI:
+    def __init__(self, input: KeyInput | None = None, quiet: bool = False) -> None:
+        self._input: KeyInput = input if input is not None else RealInput()
+        self._quiet = quiet
+        self._glyphs: GlyphTable = pick_glyph_table(sys.stdout.encoding)
+
+    def _build_model(self, executor: Any) -> UIModel:
+        rows: list[Row] = []
+        for key, s in executor.states.items():
+            rows.append(
+                Row(
+                    key=key,
+                    name=s.manager.name,
+                    icon=getattr(s.manager, "icon", ""),
+                    status=s.status,
+                    done=len(s.results),
+                    total=len(s.outdated),
+                    duration_s=0,
+                    log=[f"{'ok' if ok else 'FAIL'} {pkg}" for pkg, ok in s.results],
+                )
+            )
+        return UIModel(rows=rows)
+
+    async def _read_key_soft(self) -> str | None:
+        if isinstance(self._input, FakeInput):
+            try:
+                return self._input.read_key()
+            except StopIteration:
+                return None
+        loop = asyncio.get_running_loop()
+        return await loop.run_in_executor(None, self._input.read_key)
+
+    async def _handle_key(self, key: str, model: UIModel, executor: Any) -> UIModel | None:
+        """Handle one keypress; return updated model or None to exit."""
+        if key in {"q", "ctrl-c"}:
+            return None
+        if key in {"j", "down"}:
+            model.move_focus(1)
+        elif key in {"k", "up"}:
+            model.move_focus(-1)
+        elif key == "g":
+            model.focus_top()
+        elif key == "G":
+            model.focus_bottom()
+        elif key in {"enter", "right"}:
+            model.toggle_expand()
+        elif key == "y":
+            fk = model.focus_key
+            if fk and executor.states[fk].status == ManagerStatus.AWAITING_CONFIRM:
+                await executor.upgrade_manager(fk)
+                model = self._build_model(executor)
+        elif key == "s":
+            fk = model.focus_key
+            if fk and executor.states[fk].status in ACTIVE_STATUSES:
+                executor.skip_manager(fk)
+                model = self._build_model(executor)
+        return model
+
+    async def run(self, executor: Any, *, auto_yes: bool, dry_run: bool) -> None:
+        await executor.check_all()
+
+        if dry_run:
+            for s in executor.states.values():
+                s.status = ManagerStatus.DONE
+            return
+
+        if auto_yes:
+            for key, s in list(executor.states.items()):
+                if s.outdated:
+                    await executor.upgrade_manager(key)
+            return
+
+        model = self._build_model(executor)
+
+        while not model.all_done():
+            key = await self._read_key_soft()
+            if key is None:
+                break
+            result = await self._handle_key(key, model, executor)
+            if result is None:
+                break
+            model = result
