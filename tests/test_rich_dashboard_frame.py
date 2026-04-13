@@ -7,7 +7,7 @@ from rich.console import Console
 from pkg_upgrade.status import ManagerStatus
 from pkg_upgrade.ui._glyphs import GlyphTable
 from pkg_upgrade.ui._model import Row, UIModel
-from pkg_upgrade.ui.rich_dashboard import build_frame
+from pkg_upgrade.ui.rich_dashboard import STATUS_COLORS, build_frame, render_progress_bar
 
 FIXTURES = Path(__file__).parent / "fixtures" / "rich_ui"
 
@@ -62,3 +62,23 @@ def test_frame_awaiting_confirm() -> None:
     rows = _base_rows()
     rows[0].status = ManagerStatus.AWAITING_CONFIRM
     _assert_golden("awaiting_confirm", _render(UIModel(rows=rows)))
+
+
+def test_status_colors_cover_every_status() -> None:
+    for s in ManagerStatus:
+        assert s in STATUS_COLORS
+
+
+def test_progress_bar_full() -> None:
+    bar = render_progress_bar(10, 10, width=10, color="green").plain
+    assert bar == "██████████"
+
+
+def test_progress_bar_half() -> None:
+    bar = render_progress_bar(5, 10, width=10, color="green").plain
+    assert bar == "█████░░░░░"
+
+
+def test_progress_bar_zero_total_is_all_dim() -> None:
+    bar = render_progress_bar(0, 0, width=6, color="green").plain
+    assert bar == "░░░░░░"

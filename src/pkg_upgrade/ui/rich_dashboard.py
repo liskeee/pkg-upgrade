@@ -14,6 +14,27 @@ from pkg_upgrade.ui._glyphs import GlyphTable, pick_glyph_table
 from pkg_upgrade.ui._input import FakeInput, KeyInput, RealInput
 from pkg_upgrade.ui._model import Row, UIModel
 
+STATUS_COLORS: dict[ManagerStatus, str] = {
+    ManagerStatus.PENDING: "dim",
+    ManagerStatus.CHECKING: "blue",
+    ManagerStatus.AWAITING_CONFIRM: "magenta",
+    ManagerStatus.UPGRADING: "yellow",
+    ManagerStatus.DONE: "green",
+    ManagerStatus.SKIPPED: "dim",
+    ManagerStatus.UNAVAILABLE: "dim",
+    ManagerStatus.ERROR: "red",
+}
+
+
+def render_progress_bar(done: int, total: int, width: int, color: str) -> Text:
+    if total <= 0:
+        return Text("░" * width, style="dim")
+    filled = min(width, max(0, round(width * done / total)))
+    t = Text()
+    t.append("█" * filled, style=color)
+    t.append("░" * (width - filled), style="dim")
+    return t
+
 
 def _fmt_duration(s: int) -> str:
     if s <= 0:
