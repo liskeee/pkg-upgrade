@@ -1,9 +1,10 @@
-+-------------------------------- pkg-upgrade ---------------------------------+
-| ████░░░░░░  7/16 packages  2 mgrs left  0:42 elapsed                         |
++----------------------------- pkg-upgrade · 0:42 -----------------------------+
+| █████░░░░░░░  7/16 packages  2 mgrs left  0:42 elapsed                       |
+|   1 ok · 0 failed · 0 skipped                                                |
 |                                                                              |
-|   MANAGER         STATUS               PROGRESS      PKGS       DUR          |
-| > H Homebrew     | > upgrading        ██░░░░░░░░  3/12      0:18             |
+|      MANAGER             STATUS                 PROGRESS        PKGS    DUR  |
+|   H  Homebrew            | > upgrading          ███░░░░░░░…     3/12   0:18  |
 |                                                                              |
 |   filter: /br                                                                |
 +------------------------------------------------------------------------------+
-  j/k move   enter expand   y confirm   s skip   q quit
+  j/k move • enter expand • y confirm • s skip • q quit
