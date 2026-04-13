@@ -16,7 +16,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
           cache: pip
@@ -28,7 +28,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
           cache: pip
@@ -43,7 +43,7 @@ jobs:
         python-version: ["3.12", "3.13"]
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
           cache: pip
@@ -59,7 +59,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
           cache: pip
@@ -70,7 +70,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
           cache: pip
@@ -87,7 +87,7 @@ jobs:
     needs: build
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
       - uses: actions/download-artifact@v8
@@ -105,7 +105,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
           cache: pip
@@ -120,7 +120,20 @@ jobs:
       github.event_name == 'push'
     steps:
       - uses: actions/checkout@v6
-      - name: Install formula from source
-        run: brew install --build-from-source ./Formula/mac-upgrade.rb
+      - name: Skip if formula has placeholder SHAs
+        id: guard
+        run: |
+          if grep -q REPLACE_WITH Formula/mac-upgrade.rb; then
+            echo "Formula still has REPLACE_WITH placeholders; skipping install/test."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Install formula via ephemeral local tap
+        if: steps.guard.outputs.skip != 'true'
+        run: |
+          TAP_DIR="$(brew --repo liskeee/mac-upgrade-ci)"
+          mkdir -p "$TAP_DIR/Formula"
+          cp Formula/mac-upgrade.rb "$TAP_DIR/Formula/"
+          brew install --build-from-source liskeee/mac-upgrade-ci/mac-upgrade
       - name: Test formula
-        run: brew test mac-upgrade
+        if: steps.guard.outputs.skip != 'true'
+        run: brew test liskeee/mac-upgrade-ci/mac-upgrade
