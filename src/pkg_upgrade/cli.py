@@ -18,6 +18,7 @@ from pkg_upgrade.config import (
     save_config,
 )
 from pkg_upgrade.onboarding import OnboardingScreen
+from pkg_upgrade.self_update import run_self_update
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -56,6 +57,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="Cap per-level concurrency",
     )
     parser.add_argument("--version", action="version", version=f"mac-upgrade {__version__}")
+    parser.add_argument(
+        "--self-update",
+        dest="self_update",
+        action="store_true",
+        help="Upgrade pkg-upgrade itself",
+    )
     return parser
 
 
@@ -168,6 +175,9 @@ def _run_onboarding_wizard(initial: dict[str, Any]) -> dict[str, Any] | None:
 
 def main() -> int:
     args = parse_args()
+
+    if args.self_update:
+        return run_self_update()
 
     if args.onboard:
         existing, _ = load_config_dict()

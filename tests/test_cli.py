@@ -1,6 +1,7 @@
 import argparse
 from typing import Any
 
+import pkg_upgrade.cli as cli_module
 from pkg_upgrade.cli import build_parser, get_log_path, main, parse_args, resolve_settings
 from pkg_upgrade.config import DEFAULT_CONFIG
 
@@ -89,6 +90,7 @@ def _args(**overrides: Any) -> argparse.Namespace:
         "onboard": False,
         "show_graph": False,
         "max_parallel": None,
+        "self_update": False,
     }
     base.update(overrides)
     return argparse.Namespace(**base)
@@ -183,3 +185,23 @@ def test_max_parallel_default():
     p = build_parser()
     ns = p.parse_args([])
     assert ns.max_parallel is None
+
+
+def test_self_update_flag_in_parser() -> None:
+    p = build_parser()
+    ns = p.parse_args(["--self-update"])
+    assert ns.self_update is True
+
+
+def test_self_update_invokes_helper(monkeypatch: Any, capsys: Any) -> None:
+    calls: dict[str, bool] = {}
+
+    def fake_run_self_update() -> int:
+        calls["ran"] = True
+        return 0
+
+    monkeypatch.setattr(cli_module, "run_self_update", fake_run_self_update)
+    monkeypatch.setattr("sys.argv", ["pkg-upgrade", "--self-update"])
+    rc = main()
+    assert rc == 0
+    assert calls["ran"] is True
