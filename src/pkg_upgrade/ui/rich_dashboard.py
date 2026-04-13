@@ -60,6 +60,8 @@ def render_row(
     tick: int,
     *,
     focused: bool,
+    # `expanded` is accepted for API symmetry; the expansion block is rendered
+    # by build_frame, not by this helper.
     expanded: bool,
 ) -> Text:
     marker = ">" if focused else " "
@@ -89,7 +91,12 @@ def render_row(
     return line
 
 
-def render_summary(model: UIModel, elapsed_s: int, tick: int) -> Text:
+def render_summary(
+    model: UIModel,
+    elapsed_s: int,
+    # `tick` is reserved for Task 4/5 consumers.
+    tick: int,
+) -> Text:
     done = sum(r.done for r in model.rows)
     total = sum(r.total for r in model.rows)
     active_left = sum(1 for r in model.rows if r.status in ACTIVE_STATUSES)

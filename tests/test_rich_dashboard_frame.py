@@ -7,7 +7,14 @@ from rich.console import Console
 from pkg_upgrade.status import ManagerStatus
 from pkg_upgrade.ui._glyphs import GlyphTable
 from pkg_upgrade.ui._model import Row, UIModel
-from pkg_upgrade.ui.rich_dashboard import STATUS_COLORS, build_frame, render_progress_bar
+from pkg_upgrade.ui.rich_dashboard import (
+    STATUS_COLORS,
+    build_frame,
+    render_footer,
+    render_progress_bar,
+    render_row,
+    render_summary,
+)
 
 FIXTURES = Path(__file__).parent / "fixtures" / "rich_ui"
 
@@ -82,13 +89,6 @@ def test_progress_bar_half() -> None:
 def test_progress_bar_zero_total_is_all_dim() -> None:
     bar = render_progress_bar(0, 0, width=6, color="green").plain
     assert bar == "░░░░░░"
-
-
-from pkg_upgrade.ui.rich_dashboard import (  # noqa: E402
-    render_footer,
-    render_row,
-    render_summary,
-)
 
 
 def test_render_row_shows_focus_marker_and_counts() -> None:
