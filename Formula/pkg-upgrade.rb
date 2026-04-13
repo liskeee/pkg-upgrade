@@ -54,6 +54,9 @@ class PkgUpgrade < Formula
 
   def install
     virtualenv_install_with_resources
+    bash_completion.install "src/pkg_upgrade/completions/pkg-upgrade.bash" => "pkg-upgrade"
+    zsh_completion.install  "src/pkg_upgrade/completions/_pkg-upgrade"     => "_pkg-upgrade"
+    fish_completion.install "src/pkg_upgrade/completions/pkg-upgrade.fish" => "pkg-upgrade.fish"
   end
 
   test do
