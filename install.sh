@@ -3,15 +3,18 @@
 set -euo pipefail
 
 REPO_URL="https://github.com/liskeee/pkg-upgrade"
-REF="${MAC_UPGRADE_REF:-main}"
-# MAC_UPGRADE_SOURCE overrides the pip spec entirely (useful for local/dev installs).
-SOURCE="${MAC_UPGRADE_SOURCE:-git+${REPO_URL}@${REF}}"
+REF="${PKG_UPGRADE_REF:-main}"
+# PKG_UPGRADE_SOURCE overrides the pip spec entirely (useful for local/dev installs).
+SOURCE="${PKG_UPGRADE_SOURCE:-git+${REPO_URL}@${REF}}"
 
 log()  { printf '==> %s\n' "$*"; }
 warn() { printf '==> warning: %s\n' "$*" >&2; }
 die()  { printf '==> error: %s\n' "$*" >&2; exit 1; }
 
-[[ "$(uname -s)" == "Darwin" ]] || die "pkg-upgrade is macOS-only (detected $(uname -s))."
+case "$(uname -s)" in
+    Darwin|Linux) ;;
+    *) die "install.sh supports macOS and Linux only (detected $(uname -s)). Use install.ps1 on Windows." ;;
+esac
 
 log "Installing pkg-upgrade from ${SOURCE}"
 
