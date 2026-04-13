@@ -1,6 +1,41 @@
 # CHANGELOG
 
 
+## v1.3.2 (2026-04-13)
+
+### Bug Fixes
+
+- **onboarding**: Idempotent declarative loader + wizard tests
+  ([#23](https://github.com/liskeee/pkg-upgrade/pull/23),
+  [`1546a42`](https://github.com/liskeee/pkg-upgrade/commit/1546a42f1f4ad9104cc07e17555d1e6feaf57313))
+
+* fix(onboarding): make declarative loader idempotent + add wizard tests
+
+Second call to discover_managers() crashed with "Manager key 'apt' already registered" because
+  load_declarative_dir re-registered every manifest on each invocation. The onboarding wizard calls
+  discover_managers() twice — once from _detect_managers to populate checkboxes, once from _collect
+  when moving to review / pressing Save — so saving produced an empty or stale manager list for
+  users.
+
+Skip manifests whose key is already in the registry, matching the pattern used by
+  _load_entry_points.
+
+Adds tests/test_onboarding.py covering checkbox population, Save/Cancel paths, initial config
+  propagation, empty-registry edge case, and Back navigation — regression guard for the bug above.
+
+Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+
+* fix(tests): satisfy mypy for onboarding pilot tests
+
+app.screen is typed as Screen[object]; cast to OnboardingScreen so mypy accepts
+  _go_to/on_button_pressed. Restrict the initial-managers check to Checkbox widgets whose id starts
+  with "mgr-" so cb.value/cb.id.removeprefix are safely typed.
+
+---------
+
+Co-authored-by: Claude Opus 4.6 <noreply@anthropic.com>
+
+
 ## v1.3.1 (2026-04-13)
 
 ### Bug Fixes
