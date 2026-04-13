@@ -1,6 +1,22 @@
 # CHANGELOG
 
 
+## v1.5.1 (2026-04-13)
+
+### Bug Fixes
+
+- **ui**: Render initial frame and tick elapsed clock in live dashboard
+  ([#26](https://github.com/liskeee/pkg-upgrade/pull/26),
+  [`a05e493`](https://github.com/liskeee/pkg-upgrade/commit/a05e493d28e9a46ea8d9a243a0c8d8ec0c4ad9b1))
+
+Switch Live to auto_refresh (default) so the initial frame renders on context enter and the elapsed
+  clock ticks at 8 Hz between keypresses. Previously auto_refresh=False meant nothing drew until the
+  first keypress, and if check_all() produced no outdated packages the loop exited without ever
+  rendering — the UI appeared blank.
+
+Co-authored-by: Claude Opus 4.6 <noreply@anthropic.com>
+
+
 ## v1.5.0 (2026-04-13)
 
 ### Features
