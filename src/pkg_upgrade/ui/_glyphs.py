@@ -12,6 +12,7 @@ SPINNER_FRAMES_ASCII: tuple[str, ...] = ("|", "/", "-", "\\")
 class GlyphTable:
     statuses: dict[ManagerStatus, str]
     spinner_frames: tuple[str, ...]
+    use_unicode: bool
 
     def status(self, s: ManagerStatus) -> str:
         return self.statuses[s]
@@ -33,6 +34,7 @@ class GlyphTable:
                 ManagerStatus.ERROR: "⚠ error",
             },
             spinner_frames=SPINNER_FRAMES_UNICODE,
+            use_unicode=True,
         )
 
     @classmethod
@@ -49,6 +51,7 @@ class GlyphTable:
                 ManagerStatus.ERROR: "! error",
             },
             spinner_frames=SPINNER_FRAMES_ASCII,
+            use_unicode=False,
         )
 
 

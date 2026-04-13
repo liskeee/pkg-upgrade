@@ -37,3 +37,8 @@ def test_ascii_spinner_frames_present() -> None:
 
 def test_pick_glyph_table_ascii_has_ascii_spinner() -> None:
     assert pick_glyph_table("ascii").spinner_frames[0] == "|"
+
+
+def test_glyph_table_use_unicode_flag() -> None:
+    assert GlyphTable.unicode().use_unicode is True
+    assert GlyphTable.ascii().use_unicode is False

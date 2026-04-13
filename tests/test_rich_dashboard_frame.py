@@ -122,7 +122,7 @@ def test_render_summary_counts_totals() -> None:
         Row("a", "a", "", ManagerStatus.DONE, 2, 2, 0, []),
         Row("b", "b", "", ManagerStatus.UPGRADING, 1, 5, 0, []),
     ]
-    out = render_summary(UIModel(rows=rows), elapsed_s=65, tick=0).plain
+    out = render_summary(UIModel(rows=rows), elapsed_s=65).plain
     assert "3/7" in out
     assert "1:05" in out
 

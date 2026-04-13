@@ -74,9 +74,9 @@ def render_row(
 
     suffix = ""
     if row.status == ManagerStatus.DONE:
-        suffix = "v" if glyphs.spinner_frames[0] == "|" else "✓"
+        suffix = "v" if not glyphs.use_unicode else "✓"
     elif row.status == ManagerStatus.ERROR:
-        suffix = "x" if glyphs.spinner_frames[0] == "|" else "✗"
+        suffix = "x" if not glyphs.use_unicode else "✗"
 
     line = Text()
     line.append(f"{marker} ")
@@ -94,8 +94,6 @@ def render_row(
 def render_summary(
     model: UIModel,
     elapsed_s: int,
-    # `tick` is reserved for Task 4/5 consumers.
-    tick: int,
 ) -> Text:
     done = sum(r.done for r in model.rows)
     total = sum(r.total for r in model.rows)
@@ -124,7 +122,7 @@ def build_frame(
     tick: int = 0,
 ) -> RenderableType:
     focus_key = model.focus_key
-    use_rounded = glyphs.spinner_frames[0] != "|"
+    use_rounded = glyphs.use_unicode
 
     header = Text(
         f"  {'MANAGER':<{_NAME_WIDTH + 3}} {'STATUS':<{_STATUS_WIDTH}} "
@@ -133,7 +131,7 @@ def build_frame(
     )
 
     row_items: list[RenderableType] = [
-        render_summary(model, elapsed_seconds, tick),
+        render_summary(model, elapsed_seconds),
         Text(""),
         header,
     ]
