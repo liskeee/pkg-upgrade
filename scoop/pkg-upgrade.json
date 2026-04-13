@@ -1,0 +1,23 @@
+{
+    "version": "0.0.0",
+    "description": "A cross-platform TUI that upgrades every package manager on your system",
+    "homepage": "https://github.com/liskeee/pkg-upgrade",
+    "license": "MIT",
+    "depends": "python",
+    "url": "https://github.com/liskeee/pkg-upgrade/releases/download/v0.0.0/pkg_upgrade-0.0.0-py3-none-any.whl",
+    "hash": "0000000000000000000000000000000000000000000000000000000000000000",
+    "installer": {
+        "script": [
+            "$whl = \"$dir\\$(Split-Path -Leaf $url)\"",
+            "python -m pip install --user --force-reinstall --no-deps \"$whl\" | Out-Null",
+            "python -m pip install --user --upgrade textual PyYAML platformdirs | Out-Null"
+        ]
+    },
+    "bin": "pkg-upgrade.exe",
+    "checkver": {
+        "github": "https://github.com/liskeee/pkg-upgrade"
+    },
+    "autoupdate": {
+        "url": "https://github.com/liskeee/pkg-upgrade/releases/download/v$version/pkg_upgrade-$version-py3-none-any.whl"
+    }
+}
