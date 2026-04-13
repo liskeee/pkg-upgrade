@@ -75,11 +75,14 @@ jobs:
           base: main
 
       - name: Mirror manifest into liskeee/scoop-bucket
-        if: ${{ secrets.SCOOP_PUSH_TOKEN != '' }}
         env:
           GH_TOKEN: ${{ secrets.SCOOP_PUSH_TOKEN }}
           TAG: ${{ steps.tag.outputs.tag }}
         run: |
+          if [ -z "${GH_TOKEN:-}" ]; then
+            echo "SCOOP_PUSH_TOKEN not set; skipping mirror."
+            exit 0
+          fi
           git clone --depth 1 "https://x-access-token:${GH_TOKEN}@github.com/liskeee/scoop-bucket.git" bucket
           mkdir -p bucket/bucket
           cp scoop/pkg-upgrade.json bucket/bucket/pkg-upgrade.json
