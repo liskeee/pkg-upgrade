@@ -1,6 +1,6 @@
 # pkg-upgrade
 
-A beautiful Textual-based TUI that upgrades every macOS package manager you have installed — Homebrew formulas & casks, pip, npm, gem, and macOS system updates — with smart parallel execution, per-manager confirmations, and a detailed dashboard.
+A beautiful keyboard-only terminal UI that upgrades every macOS package manager you have installed — Homebrew formulas & casks, pip, npm, gem, and macOS system updates — with smart parallel execution, per-manager confirmations, and a detailed dashboard.
 
 ## Features
 
@@ -13,6 +13,19 @@ A beautiful Textual-based TUI that upgrades every macOS package manager you have
 - Per-manager confirmation with preview, or `--yes` to skip prompts
 - Timestamped log file + native macOS notification on completion
 - `--skip` / `--only` / `--dry-run` / `--list`
+
+## Keybindings
+
+| Key | Action |
+|-----|--------|
+| `j` / `k` or `↑` / `↓` | Move up/down |
+| `g` / `G` | Jump to top/bottom |
+| `Enter` / `→` | Expand/confirm |
+| `y` | Confirm upgrade |
+| `s` | Skip package |
+| `/` | Filter/search |
+| `q` | Quit |
+| `?` | Show help |
 
 ## Installation
 
