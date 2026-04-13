@@ -1,6 +1,15 @@
 # CHANGELOG
 
 
+## v1.3.1 (2026-04-13)
+
+### Bug Fixes
+
+- **cli**: Run onboarding wizard in worker for push_screen_wait
+  ([#22](https://github.com/liskeee/pkg-upgrade/pull/22),
+  [`ca0dde5`](https://github.com/liskeee/pkg-upgrade/commit/ca0dde5c0b336ec5796d26934aa8c5042c3b0789))
+
+
 ## v1.3.0 (2026-04-13)
 
 ### Features
