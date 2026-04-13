@@ -71,3 +71,13 @@ def test_winget_upgrade_parses_fixed_width_table() -> None:
         ("Microsoft.PowerShell", "7.4.0.0", "7.4.1.0"),
         ("Python.Python.3.12", "3.12.1150.0", "3.12.2150.0"),
     ]
+
+
+def test_scoop_status_parses_fixed_width() -> None:
+    parser = get_parser("scoop_status")
+    pkgs = parser(_load("scoop"))
+    assert [(p.name, p.current_version, p.latest_version) for p in pkgs] == [
+        ("git", "2.43.0", "2.44.0"),
+        ("ripgrep", "14.1.0", "14.1.1"),
+        ("nodejs", "20.11.0", "20.11.1"),
+    ]
