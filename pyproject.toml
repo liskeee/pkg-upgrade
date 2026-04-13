@@ -11,7 +11,8 @@ license = { text = "MIT" }
 authors = [{ name = "Lukasz Lis" }]
 requires-python = ">=3.12"
 dependencies = [
-    "textual>=8.2.3",
+    "rich>=13.7",
+    "readchar>=4.0",
     "PyYAML>=6.0",
     "platformdirs>=4.0",
 ]
@@ -103,10 +104,6 @@ warn_redundant_casts = true
 warn_unused_ignores = true
 pretty = true
 files = ["src", "tests"]
-
-[[tool.mypy.overrides]]
-module = ["textual.*"]
-ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = ["tests.*"]
