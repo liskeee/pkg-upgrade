@@ -69,6 +69,7 @@ def test_get_log_path_default(tmp_path):
 
 def test_get_log_path_expands_tilde(tmp_path, monkeypatch):
     monkeypatch.setenv("HOME", str(tmp_path))
+    monkeypatch.setenv("USERPROFILE", str(tmp_path))
     path = get_log_path(True, "~/logs")
     assert path is not None
     assert str(tmp_path) in path

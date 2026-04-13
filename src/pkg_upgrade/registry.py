@@ -26,6 +26,28 @@ def clear_registry() -> None:
     _REGISTRY.clear()
 
 
+def _rebuild_built_in_managers() -> None:
+    """Re-register built-in managers. Used after clear_registry() in tests."""
+    from pkg_upgrade.managers.brew import BrewManager  # noqa: PLC0415
+    from pkg_upgrade.managers.cask import CaskManager  # noqa: PLC0415
+    from pkg_upgrade.managers.gem import GemManager  # noqa: PLC0415
+    from pkg_upgrade.managers.npm import NpmManager  # noqa: PLC0415
+    from pkg_upgrade.managers.pip import PipManager  # noqa: PLC0415
+    from pkg_upgrade.managers.system import SystemManager  # noqa: PLC0415
+
+    managers: list[type[PackageManager]] = [
+        BrewManager,
+        CaskManager,
+        GemManager,
+        NpmManager,
+        PipManager,
+        SystemManager,
+    ]
+    for cls in managers:
+        if cls.key not in _REGISTRY:
+            _REGISTRY[cls.key] = cls
+
+
 def all_registered() -> list[type[PackageManager]]:
     import pkg_upgrade.managers  # noqa: F401, PLC0415
 
@@ -58,6 +80,10 @@ def discover_managers(
     declarative_dir: Path | None = None,
 ) -> list[PackageManager]:
     import pkg_upgrade.managers  # noqa: F401, PLC0415
+
+    # Rebuild built-in managers if registry is empty (happens after clear_registry() in tests)
+    if not _REGISTRY:
+        _rebuild_built_in_managers()
 
     if load_entry_points:
         _load_entry_points()

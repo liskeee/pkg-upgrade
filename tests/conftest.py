@@ -1,5 +1,8 @@
+import pytest
+
 from pkg_upgrade.manager import PackageManager
 from pkg_upgrade.models import Package, Result
+from pkg_upgrade.registry import clear_registry
 
 
 class FakeManager(PackageManager):
@@ -22,3 +25,8 @@ class FakeManager(PackageManager):
 
     async def upgrade_all(self) -> list[Result]:
         return [await self.upgrade(p) for p in self._outdated]
+
+
+@pytest.fixture(autouse=True)
+def _clear_registry() -> None:
+    clear_registry()

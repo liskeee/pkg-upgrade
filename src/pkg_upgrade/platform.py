@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import ctypes
+import shutil
 import sys
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal
@@ -40,6 +41,16 @@ def is_windows_admin() -> bool:
     if current_os() != "windows":
         return False
     try:
-        return bool(ctypes.windll.shell32.IsUserAnAdmin())  # type: ignore[attr-defined]
+        return bool(ctypes.windll.shell32.IsUserAnAdmin())  # type: ignore[attr-defined,unused-ignore]
     except (AttributeError, OSError):
         return False
+
+
+async def sudo_available_noninteractive() -> bool:
+    """Return True if `sudo -n true` succeeds (user has a cached credential)."""
+    if shutil.which("sudo") is None:
+        return False
+    from pkg_upgrade._subprocess import run_command  # noqa: PLC0415
+
+    rc, _, _ = await run_command(["sudo", "-n", "true"])
+    return rc == 0

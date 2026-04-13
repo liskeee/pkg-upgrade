@@ -1,0 +1,9 @@
+
+Last metadata expiration check: 0:05:12 ago on Sun Apr 13 06:00:00 2026.
+
+bash.x86_64                       5.2.15-1.fc39            updates
+kernel.x86_64                     6.6.13-200.fc39          updates
+vim-enhanced.x86_64               2:9.1.0-1.fc39           updates
+
+Obsoleting Packages
+old-thing.noarch                  1.0-1.fc38               @anaconda

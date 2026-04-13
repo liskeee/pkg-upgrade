@@ -1,0 +1,12 @@
+name: Flatpak
+key: flatpak
+icon: "📦"
+platforms: [linux]
+install_hint: "Install via your distro package manager: flatpak."
+
+check:
+  cmd: [flatpak, remote-ls, --updates, --columns=application,version]
+  parser: flatpak_remote_ls_updates
+
+upgrade:
+  cmd: [flatpak, update, -y, "{name}"]

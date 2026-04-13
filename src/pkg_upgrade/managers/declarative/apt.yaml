@@ -1,0 +1,13 @@
+name: APT
+key: apt
+icon: "📦"
+platforms: [linux]
+install_hint: "Debian/Ubuntu ships APT by default."
+requires_sudo: true
+
+check:
+  cmd: [apt, list, --upgradable]
+  parser: apt_upgradable
+
+upgrade:
+  cmd: [sudo, apt-get, install, --only-upgrade, -y, "{name}"]

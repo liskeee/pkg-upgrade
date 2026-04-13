@@ -24,4 +24,15 @@ def known_parsers() -> list[str]:
     return sorted(_PARSERS)
 
 
-from pkg_upgrade.parsers import generic  # noqa: E402, F401
+from pkg_upgrade.parsers import (  # noqa: E402, F401
+    apt,
+    choco,
+    dnf,
+    flatpak,
+    generic,
+    mas,
+    pacman,
+    scoop,
+    snap,
+    winget,
+)

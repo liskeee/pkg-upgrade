@@ -1,0 +1,12 @@
+name: Scoop
+key: scoop
+icon: "🥄"
+platforms: [windows]
+install_hint: "See https://scoop.sh for install instructions."
+
+check:
+  cmd: [scoop, status]
+  parser: scoop_status
+
+upgrade:
+  cmd: [scoop, update, "{name}"]

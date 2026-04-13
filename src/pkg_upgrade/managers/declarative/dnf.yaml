@@ -1,0 +1,13 @@
+name: DNF
+key: dnf
+icon: "🎩"
+platforms: [linux]
+install_hint: "Fedora/RHEL ships DNF by default."
+requires_sudo: true
+
+check:
+  cmd: [dnf, check-update, --quiet]
+  parser: dnf_check_update
+
+upgrade:
+  cmd: [sudo, dnf, upgrade, -y, "{name}"]

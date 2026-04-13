@@ -1,0 +1,7 @@
+Scoop is up to date.
+
+Name    Installed Version Latest Version Missing Dependencies Info
+----    ----------------- -------------- -------------------- ----
+git     2.43.0            2.44.0
+ripgrep 14.1.0            14.1.1
+nodejs  20.11.0           20.11.1

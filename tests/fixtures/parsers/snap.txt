@@ -1,0 +1,4 @@
+Name       Version        Rev    Size   Publisher   Notes
+core22     20240111       1122   77MB   canonical*  -
+firefox    123.0.1-1      3626   247MB  mozilla*    -
+snapd      2.61.2         21184  39MB   canonical*  -

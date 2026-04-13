@@ -1,0 +1,13 @@
+name: Snap
+key: snap
+icon: "⚡"
+platforms: [linux]
+install_hint: "Install snapd via your distro package manager."
+requires_sudo: true
+
+check:
+  cmd: [snap, refresh, --list]
+  parser: snap_refresh_list
+
+upgrade:
+  cmd: [sudo, snap, refresh, "{name}"]

@@ -1,0 +1,12 @@
+name: winget
+key: winget
+icon: "🪟"
+platforms: [windows]
+install_hint: "Install 'App Installer' from the Microsoft Store."
+
+check:
+  cmd: [winget, upgrade]
+  parser: winget_upgrade
+
+upgrade:
+  cmd: [winget, upgrade, --silent, --accept-source-agreements, --accept-package-agreements, --id, "{name}"]

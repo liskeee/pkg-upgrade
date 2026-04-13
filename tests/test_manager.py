@@ -2,7 +2,7 @@ import pytest
 
 from pkg_upgrade.manager import PackageManager
 from pkg_upgrade.models import Package, Result
-from pkg_upgrade.registry import discover_managers, select_managers
+from pkg_upgrade.registry import all_registered, discover_managers, select_managers
 from tests.conftest import FakeManager
 
 
@@ -42,7 +42,9 @@ async def test_upgrade_all():
 
 
 def test_all_managers_contains_six():
-    assert len(discover_managers(load_entry_points=False, load_declarative=False)) == 6
+    # 6 built-in managers registered (pre-OS-filter): brew, cask, pip, npm, gem, system
+    discover_managers(load_entry_points=False, load_declarative=False)
+    assert len(all_registered()) == 6
 
 
 def test_all_managers_keys_unique():

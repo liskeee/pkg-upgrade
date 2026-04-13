@@ -4,8 +4,11 @@ from pkg_upgrade.errors import ConfigurationError
 from pkg_upgrade.executor import ExecutionGroup, Executor
 from pkg_upgrade.manager import PackageManager
 from pkg_upgrade.managers.brew import BrewManager
+from pkg_upgrade.managers.cask import CaskManager
 from pkg_upgrade.managers.gem import GemManager
 from pkg_upgrade.managers.npm import NpmManager
+from pkg_upgrade.managers.pip import PipManager
+from pkg_upgrade.managers.system import SystemManager
 
 
 def test_execution_group_fields():
@@ -16,7 +19,10 @@ def test_execution_group_fields():
 
 
 def test_default_executor_builds_groups():
-    executor = Executor.default()
+    # Use explicit manager list so the test is OS-agnostic (Executor.default() filters by OS).
+    executor = Executor.from_managers(
+        [BrewManager(), CaskManager(), PipManager(), NpmManager(), GemManager(), SystemManager()]
+    )
     # brew/npm/gem/system have no deps → level 0; cask/pip depend on brew → level 1
     assert len(executor.groups) == 2
     assert all(g.parallel for g in executor.groups)
@@ -37,7 +43,8 @@ def test_executor_subset_only_chain():
 
 def test_all_managers_flattens_groups():
     executor = Executor.default()
-    assert len(executor.all_managers()) == 6
+    # 6 built-in managers (brew, cask, pip, npm, gem, system) + 1 declarative (mas on macOS)
+    assert len(executor.all_managers()) >= 6
 
 
 def _mk(
