@@ -10,7 +10,7 @@ import pytest
 
 COMPLETIONS = Path(__file__).resolve().parent.parent / "src" / "pkg_upgrade" / "completions"
 
-pytestmark = pytest.mark.skipif(sys.platform == "win32", reason="POSIX-only shell harness")
+posix_only = pytest.mark.skipif(sys.platform == "win32", reason="POSIX-only shell harness")
 
 
 def _bash_complete(
@@ -52,29 +52,34 @@ def _isolated_cache(tmp_path, monkeypatch):
     monkeypatch.setenv("XDG_CACHE_HOME", str(tmp_path))
 
 
+@posix_only
 def test_bash_flag_completion():
     candidates = _bash_complete("pkg-upgrade --")
     for flag in ("--only", "--skip", "--yes", "--dry-run", "--list", "--self-update"):
         assert flag in candidates
 
 
+@posix_only
 def test_bash_manager_completion_only():
     candidates = _bash_complete("pkg-upgrade --only br")
     assert "brew" in candidates
     assert "cask" not in candidates
 
 
+@posix_only
 def test_bash_manager_completion_skip():
     candidates = _bash_complete("pkg-upgrade --skip p")
     assert "pip" in candidates
 
 
+@posix_only
 def test_bash_comma_separated():
     candidates = _bash_complete("pkg-upgrade --only brew,c")
     assert "cask" in candidates
     assert "brew" not in candidates
 
 
+@posix_only
 def test_zsh_script_is_syntactically_valid():
     zsh = shutil.which("zsh")
     if not zsh:
@@ -84,6 +89,7 @@ def test_zsh_script_is_syntactically_valid():
     assert r.returncode == 0, r.stderr
 
 
+@posix_only
 def test_zsh_script_lists_manager_keys_in_source():
     text = (COMPLETIONS / "_pkg-upgrade").read_text(encoding="utf-8")
     assert "managers.list" in text
@@ -91,6 +97,7 @@ def test_zsh_script_lists_manager_keys_in_source():
         assert k in text
 
 
+@posix_only
 def test_fish_script_is_syntactically_valid():
     fish = shutil.which("fish")
     if not fish:
@@ -100,6 +107,7 @@ def test_fish_script_is_syntactically_valid():
     assert r.returncode == 0, r.stderr
 
 
+@posix_only
 def test_fish_manager_completion():
     fish = shutil.which("fish")
     if not fish:
@@ -116,3 +124,30 @@ def test_fish_manager_completion():
     )
     assert "brew" in r.stdout
     assert "pip" in r.stdout
+
+
+def test_powershell_script_references_register_completer():
+    text = (COMPLETIONS / "pkg-upgrade.ps1").read_text(encoding="utf-8")
+    assert "Register-ArgumentCompleter" in text
+    assert "pkg-upgrade" in text
+    for k in ("brew", "cask", "pip", "npm", "gem", "system"):
+        assert k in text
+
+
+def test_powershell_script_parses():
+    pwsh = shutil.which("pwsh") or shutil.which("powershell")
+    if not pwsh:
+        pytest.skip("pwsh not installed")
+    script = COMPLETIONS / "pkg-upgrade.ps1"
+    r = subprocess.run(
+        [
+            pwsh,
+            "-NoProfile",
+            "-Command",
+            f"$null = [ScriptBlock]::Create((Get-Content -Raw '{script}'))",
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert r.returncode == 0, r.stderr
