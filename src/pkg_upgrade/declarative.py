@@ -11,6 +11,7 @@ from pkg_upgrade._subprocess import run_command as run_subprocess
 from pkg_upgrade.manager import PackageManager
 from pkg_upgrade.models import Package, Result
 from pkg_upgrade.parsers import get_parser
+from pkg_upgrade.platform import is_windows_admin, sudo_available_noninteractive
 from pkg_upgrade.registry import register_manager
 
 _REQUIRED_TOP = {"name", "key", "icon", "platforms", "check", "upgrade"}
@@ -27,6 +28,7 @@ class _Manifest:
     depends_on: tuple[str, ...]
     install_hint: str
     requires_sudo: bool
+    requires_admin: bool
     check_cmd: list[str]
     check_parser: str
     check_parser_kwargs: dict[str, Any]
@@ -55,6 +57,7 @@ class _Manifest:
             depends_on=tuple(data.get("depends_on", ())),
             install_hint=data.get("install_hint", ""),
             requires_sudo=bool(data.get("requires_sudo", False)),
+            requires_admin=bool(data.get("requires_admin", False)),
             check_cmd=list(check["cmd"]),
             check_parser=check["parser"],
             check_parser_kwargs=parser_kwargs,
@@ -80,7 +83,11 @@ class DeclarativeManager(PackageManager):
         binary = self._m.check_cmd[0]
         if binary == "sudo" and len(self._m.check_cmd) > 1:
             binary = self._m.check_cmd[1]
-        return shutil.which(binary) is not None
+        if shutil.which(binary) is None:
+            return False
+        if self._m.requires_sudo and not await sudo_available_noninteractive():
+            return False
+        return not self._m.requires_admin or is_windows_admin()
 
     async def check_outdated(self) -> list[Package]:
         rc, out, _ = await run_subprocess(self._m.check_cmd)
