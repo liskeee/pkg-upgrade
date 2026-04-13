@@ -7,6 +7,7 @@ from datetime import date
 from pathlib import Path
 from typing import Any
 
+from textual import work
 from textual.app import App, ComposeResult
 
 from pkg_upgrade import __version__
@@ -183,7 +184,11 @@ def _run_onboarding_wizard(initial: dict[str, Any]) -> dict[str, Any] | None:
         def compose(self) -> ComposeResult:
             return []
 
-        async def on_mount(self) -> None:
+        def on_mount(self) -> None:
+            self._run_wizard()
+
+        @work
+        async def _run_wizard(self) -> None:
             nonlocal result
             result = await self.push_screen_wait(OnboardingScreen(initial=initial))
             self.exit()
