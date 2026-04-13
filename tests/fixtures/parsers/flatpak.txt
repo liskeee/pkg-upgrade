@@ -1,0 +1,3 @@
+org.mozilla.firefox	123.0.1
+org.gimp.GIMP	2.10.36
+com.github.tchx84.Flatseal	2.2.0

@@ -41,3 +41,13 @@ def test_pacman_qu_parses_arrows() -> None:
         ("firefox", "122.0-1", "123.0.1-1"),
         ("python", "3.11.7-1", "3.12.2-1"),
     ]
+
+
+def test_flatpak_parses_tab_columns() -> None:
+    parser = get_parser("flatpak_remote_ls_updates")
+    pkgs = parser(_load("flatpak"))
+    assert [(p.name, p.latest_version) for p in pkgs] == [
+        ("org.mozilla.firefox", "123.0.1"),
+        ("org.gimp.GIMP", "2.10.36"),
+        ("com.github.tchx84.Flatseal", "2.2.0"),
+    ]
