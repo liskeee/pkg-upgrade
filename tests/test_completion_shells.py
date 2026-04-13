@@ -71,3 +71,19 @@ def test_bash_comma_separated():
     candidates = _bash_complete("pkg-upgrade --only brew,c")
     assert "cask" in candidates
     assert "brew" not in candidates
+
+
+def test_zsh_script_is_syntactically_valid():
+    zsh = shutil.which("zsh")
+    if not zsh:
+        pytest.skip("zsh not installed")
+    script = COMPLETIONS / "_pkg-upgrade"
+    r = subprocess.run([zsh, "-n", str(script)], capture_output=True, text=True, check=False)
+    assert r.returncode == 0, r.stderr
+
+
+def test_zsh_script_lists_manager_keys_in_source():
+    text = (COMPLETIONS / "_pkg-upgrade").read_text(encoding="utf-8")
+    assert "managers.list" in text
+    for k in ("brew", "cask", "pip", "npm", "gem", "system"):
+        assert k in text

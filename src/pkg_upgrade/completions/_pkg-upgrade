@@ -1,2 +1,78 @@
-#compdef pkg-upgrade
-# stub
+#compdef pkg-upgrade pkgup
+
+_pkg_upgrade_managers() {
+  local cache="${XDG_CACHE_HOME:-$HOME/.cache}/pkg-upgrade/managers.list"
+  if [[ -r "$cache" ]]; then
+    local -a lines
+    lines=(${(f)"$(<$cache)"})
+    print -l -- $lines
+  else
+    print -l -- brew cask gem npm pip system
+  fi
+}
+
+_pkg_upgrade_complete_list() {
+  local cur="${words[CURRENT]}"
+  local prefix tail sep
+  if [[ "$cur" == *","* ]]; then
+    prefix="${cur%,*}"
+    tail="${cur##*,}"
+    sep=","
+  else
+    prefix=""
+    tail="$cur"
+    sep=""
+  fi
+  local -a used all cand
+  used=(${(s:,:)prefix})
+  all=(${(f)"$(_pkg_upgrade_managers)"})
+  local m
+  for m in $all; do
+    if [[ -z "${used[(r)$m]}" && "$m" == ${tail}* ]]; then
+      cand+=("${prefix}${sep}${m}")
+    fi
+  done
+  compadd -- $cand
+}
+
+_pkg-upgrade() {
+  local -a flags
+  flags=(
+    '--only[run only these managers]:managers:_pkg_upgrade_complete_list'
+    '--skip[skip these managers]:managers:_pkg_upgrade_complete_list'
+    '--yes[auto-confirm]'
+    '-y[auto-confirm]'
+    '--dry-run[print plan without running]'
+    '--no-notify[disable completion notification]'
+    '--no-log[disable log file]'
+    '--log-dir[log directory]:dir:_files -/'
+    '--list[list managers]'
+    '--plain[plain output with --list]'
+    '--onboard[run onboarding wizard]'
+    '--show-graph[print execution plan]'
+    '--max-parallel[cap concurrency]:n:'
+    '--version[print version]'
+    '--self-update[upgrade pkg-upgrade itself]'
+  )
+
+  local context state state_descr line
+  typeset -A opt_args
+
+  _arguments -C \
+    $flags \
+    '1: :->cmd' \
+    '*:: :->args'
+
+  case $state in
+    cmd)
+      _values 'subcommand' 'completion[print shell completion]'
+      ;;
+    args)
+      if [[ "${line[1]}" == "completion" ]]; then
+        _values 'shell' bash zsh fish powershell
+      fi
+      ;;
+  esac
+}
+
+_pkg-upgrade "$@"
