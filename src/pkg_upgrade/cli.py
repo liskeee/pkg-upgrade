@@ -68,6 +68,9 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Upgrade pkg-upgrade itself",
     )
+    subparsers = parser.add_subparsers(dest="subcommand")
+    comp = subparsers.add_parser("completion", help="Print shell completion script")
+    comp.add_argument("shell", choices=["bash", "zsh", "fish", "powershell"])
     return parser
 
 
@@ -189,8 +192,13 @@ def _run_onboarding_wizard(initial: dict[str, Any]) -> dict[str, Any] | None:
     return result
 
 
-def main() -> int:
+def main() -> int:  # noqa: PLR0911
     args = parse_args()
+
+    if args.subcommand == "completion":
+        from pkg_upgrade.completion import completion_subcommand  # noqa: PLC0415
+
+        return completion_subcommand(args.shell)
 
     if args.self_update:
         return run_self_update()

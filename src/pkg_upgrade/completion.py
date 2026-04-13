@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import sys
+from importlib import resources
 from pathlib import Path
 
 
@@ -24,3 +25,24 @@ def plain_list_managers(*, write_cache: bool = False) -> list[str]:
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text("\n".join(keys) + "\n", encoding="utf-8")
     return keys
+
+
+_SHELL_FILES: dict[str, str] = {
+    "bash": "pkg-upgrade.bash",
+    "zsh": "_pkg-upgrade",
+    "fish": "pkg-upgrade.fish",
+    "powershell": "pkg-upgrade.ps1",
+}
+
+
+def completion_subcommand(shell: str) -> int:
+    filename = _SHELL_FILES.get(shell)
+    if filename is None:
+        valid = ", ".join(sorted(_SHELL_FILES))
+        print(f"error: unknown shell '{shell}'. Valid: {valid}", file=sys.stderr)
+        return 2
+    text = resources.files("pkg_upgrade.completions").joinpath(filename).read_text(encoding="utf-8")
+    sys.stdout.write(text)
+    if not text.endswith("\n"):
+        sys.stdout.write("\n")
+    return 0

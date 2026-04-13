@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pytest
+
 from pkg_upgrade import cli, completion
 
 
@@ -38,3 +40,17 @@ def test_cli_list_plain_smoke(capsys, tmp_path, monkeypatch):
     out = capsys.readouterr().out.splitlines()
     assert "brew" in out
     assert out == sorted(out)
+
+
+@pytest.mark.parametrize("shell", ["bash", "zsh", "fish", "powershell"])
+def test_completion_subcommand_prints_packaged_script(shell, capsys):
+    assert completion.completion_subcommand(shell) == 0
+    out = capsys.readouterr().out
+    assert out
+    assert "pkg-upgrade" in out
+
+
+def test_completion_subcommand_invalid_shell(capsys):
+    assert completion.completion_subcommand("tcsh") == 2
+    err = capsys.readouterr().err
+    assert "bash" in err and "zsh" in err and "fish" in err and "powershell" in err
