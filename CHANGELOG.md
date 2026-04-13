@@ -1,6 +1,19 @@
 # CHANGELOG
 
 
+## v1.2.2 (2026-04-13)
+
+### Bug Fixes
+
+- **release**: Rebase on latest main before semantic-release push
+  ([#19](https://github.com/liskeee/pkg-upgrade/pull/19),
+  [`ac3e1dd`](https://github.com/liskeee/pkg-upgrade/commit/ac3e1dd6e689a2cbe0e19cd242be1dee661ceea4))
+
+Release runs checked out a stale main and failed pushing back when another commit landed mid-run.
+  Rebase on origin/main before running semantic-release so the push is fast-forward. Also stop
+  tracking stray wheels at the repo root.
+
+
 ## v1.2.1 (2026-04-13)
 
 ### Bug Fixes
