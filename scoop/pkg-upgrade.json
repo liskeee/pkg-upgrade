@@ -13,6 +13,18 @@
             "python -m pip install --user --upgrade textual PyYAML platformdirs | Out-Null"
         ]
     },
+    "post_install": [
+        "$comp = Join-Path $dir 'completions\\pkg-upgrade.ps1'",
+        "Copy-Item -Force (Join-Path $dir 'src\\pkg_upgrade\\completions\\pkg-upgrade.ps1') $comp -ErrorAction SilentlyContinue",
+        "$line = \". `\"$comp`\"\"",
+        "if (-not (Test-Path $PROFILE)) { New-Item -ItemType File -Force -Path $PROFILE | Out-Null }",
+        "if (-not (Select-String -Path $PROFILE -SimpleMatch -Pattern 'pkg-upgrade.ps1' -Quiet)) { Add-Content -Path $PROFILE -Value $line }"
+    ],
+    "uninstaller": {
+        "script": [
+            "if (Test-Path $PROFILE) { (Get-Content $PROFILE) -notmatch 'pkg-upgrade.ps1' | Set-Content $PROFILE }"
+        ]
+    },
     "bin": "pkg-upgrade.exe",
     "checkver": {
         "github": "https://github.com/liskeee/pkg-upgrade"
