@@ -1,11 +1,11 @@
 {
-    "version": "0.0.0",
+    "version": "1.2.0",
     "description": "A cross-platform TUI that upgrades every package manager on your system",
     "homepage": "https://github.com/liskeee/pkg-upgrade",
     "license": "MIT",
     "depends": "python",
-    "url": "https://github.com/liskeee/pkg-upgrade/releases/download/v0.0.0/pkg_upgrade-0.0.0-py3-none-any.whl",
-    "hash": "0000000000000000000000000000000000000000000000000000000000000000",
+    "url": "https://github.com/liskeee/pkg-upgrade/releases/download/v1.2.0/pkg_upgrade-1.2.0-py3-none-any.whl",
+    "hash": "c8495b1b6328595eaf38556e02f64053ddaabbfcfb826c6c29e69efb711ec115",
     "installer": {
         "script": [
             "$whl = \"$dir\\$(Split-Path -Leaf $url)\"",
