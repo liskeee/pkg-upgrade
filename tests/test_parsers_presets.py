@@ -31,3 +31,13 @@ def test_dnf_check_update_parses_packages_and_stops_at_obsoletes() -> None:
         ("kernel", "6.6.13-200.fc39"),
         ("vim-enhanced", "2:9.1.0-1.fc39"),
     ]
+
+
+def test_pacman_qu_parses_arrows() -> None:
+    parser = get_parser("pacman_qu")
+    pkgs = parser(_load("pacman"))
+    assert [(p.name, p.current_version, p.latest_version) for p in pkgs] == [
+        ("linux", "6.6.10.arch1-1", "6.7.2.arch1-1"),
+        ("firefox", "122.0-1", "123.0.1-1"),
+        ("python", "3.11.7-1", "3.12.2-1"),
+    ]

@@ -28,4 +28,5 @@ from pkg_upgrade.parsers import (  # noqa: E402, F401
     apt,
     dnf,
     generic,
+    pacman,
 )
