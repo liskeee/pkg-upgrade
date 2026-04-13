@@ -82,3 +82,52 @@ def test_progress_bar_half() -> None:
 def test_progress_bar_zero_total_is_all_dim() -> None:
     bar = render_progress_bar(0, 0, width=6, color="green").plain
     assert bar == "░░░░░░"
+
+
+from pkg_upgrade.ui.rich_dashboard import (  # noqa: E402
+    render_footer,
+    render_row,
+    render_summary,
+)
+
+
+def test_render_row_shows_focus_marker_and_counts() -> None:
+    row = Row("brew", "Homebrew", "H", ManagerStatus.UPGRADING, 3, 10, 5, [])
+    out = render_row(row, GlyphTable.ascii(), tick=0, focused=True, expanded=False).plain
+    assert out.lstrip().startswith(">")
+    assert "Homebrew" in out
+    assert "3/10" in out
+
+
+def test_render_row_unfocused_has_no_marker() -> None:
+    row = Row("brew", "Homebrew", "H", ManagerStatus.PENDING, 0, 0, 0, [])
+    out = render_row(row, GlyphTable.ascii(), tick=0, focused=False, expanded=False).plain
+    assert not out.lstrip().startswith(">")
+
+
+def test_render_row_done_has_check_suffix() -> None:
+    row = Row("pip", "pip", "P", ManagerStatus.DONE, 4, 4, 9, [])
+    out = render_row(row, GlyphTable.ascii(), tick=0, focused=False, expanded=False).plain
+    assert out.rstrip().endswith("v")
+
+
+def test_render_row_failed_has_cross_suffix() -> None:
+    row = Row("npm", "npm", "N", ManagerStatus.ERROR, 1, 3, 2, [])
+    out = render_row(row, GlyphTable.ascii(), tick=0, focused=False, expanded=False).plain
+    assert out.rstrip().endswith("x")
+
+
+def test_render_summary_counts_totals() -> None:
+    rows = [
+        Row("a", "a", "", ManagerStatus.DONE, 2, 2, 0, []),
+        Row("b", "b", "", ManagerStatus.UPGRADING, 1, 5, 0, []),
+    ]
+    out = render_summary(UIModel(rows=rows), elapsed_s=65, tick=0).plain
+    assert "3/7" in out
+    assert "1:05" in out
+
+
+def test_render_footer_contains_keybinds() -> None:
+    out = render_footer().plain
+    for key in ("j/k", "enter", "y", "s", "q"):
+        assert key in out

@@ -49,6 +49,66 @@ def _fmt_progress(done: int, total: int) -> str:
     return f"{done}/{total}"
 
 
+_BAR_WIDTH = 10
+_NAME_WIDTH = 12
+_STATUS_WIDTH = 20
+
+
+def render_row(
+    row: Row,
+    glyphs: GlyphTable,
+    tick: int,
+    *,
+    focused: bool,
+    expanded: bool,
+) -> Text:
+    marker = ">" if focused else " "
+    color = STATUS_COLORS[row.status]
+
+    if row.status in ACTIVE_STATUSES and row.status != ManagerStatus.PENDING:
+        status_label = f"{glyphs.spinner(tick)} {glyphs.status(row.status)}"
+    else:
+        status_label = glyphs.status(row.status)
+
+    suffix = ""
+    if row.status == ManagerStatus.DONE:
+        suffix = "v" if glyphs.spinner_frames[0] == "|" else "✓"
+    elif row.status == ManagerStatus.ERROR:
+        suffix = "x" if glyphs.spinner_frames[0] == "|" else "✗"
+
+    line = Text()
+    line.append(f"{marker} ")
+    line.append(f"{row.icon} ")
+    line.append(f"{row.name:<{_NAME_WIDTH}} ", style="bold" if focused else "")
+    line.append(f"{status_label:<{_STATUS_WIDTH}} ", style=color)
+    line.append_text(render_progress_bar(row.done, row.total, _BAR_WIDTH, color))
+    line.append(f"  {_fmt_progress(row.done, row.total):<8}")
+    line.append(f"{_fmt_duration(row.duration_s):>6}")
+    if suffix:
+        line.append(f"  {suffix}", style=color)
+    return line
+
+
+def render_summary(model: UIModel, elapsed_s: int, tick: int) -> Text:
+    done = sum(r.done for r in model.rows)
+    total = sum(r.total for r in model.rows)
+    active_left = sum(1 for r in model.rows if r.status in ACTIVE_STATUSES)
+
+    t = Text()
+    t.append_text(render_progress_bar(done, total, _BAR_WIDTH, "cyan"))
+    t.append(f"  {done}/{total} packages  ", style="bold")
+    t.append(f"{active_left} mgrs left  ", style="dim")
+    t.append(f"{_fmt_duration(elapsed_s)} elapsed", style="dim")
+    return t
+
+
+def render_footer() -> Text:
+    return Text(
+        "  j/k move   enter expand   y confirm   s skip   q quit",
+        style="dim",
+    )
+
+
 def build_frame(
     model: UIModel,
     glyphs: GlyphTable,
