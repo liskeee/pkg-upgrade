@@ -23,8 +23,8 @@ from textual.widgets import (
     Static,
 )
 
-from mac_upgrade.config import DEFAULT_CONFIG
-from mac_upgrade.managers import ALL_MANAGERS
+from pkg_upgrade.config import DEFAULT_CONFIG
+from pkg_upgrade.registry import discover_managers
 
 STEP_IDS = ["step-managers", "step-confirm", "step-notify", "step-log", "step-review"]
 
@@ -88,7 +88,7 @@ class OnboardingScreen(Screen[dict[str, Any] | None]):
     def compose(self) -> ComposeResult:
         yield Header(show_clock=False)
         with Vertical(id="onboarding-box"):
-            yield Static("Welcome to mac-upgrade — let's get you set up.", id="step-title")
+            yield Static("Welcome to pkg-upgrade — let's get you set up.", id="step-title")
             with ContentSwitcher(initial=STEP_IDS[0], id="switcher"):
                 with VerticalScroll(id="step-managers", classes="step-panel"):
                     yield Label("Which package managers do you want to upgrade by default?")
@@ -138,17 +138,18 @@ class OnboardingScreen(Screen[dict[str, Any] | None]):
         self.run_worker(self._detect_managers(), exclusive=True)
 
     async def _detect_managers(self) -> None:
+        all_managers = discover_managers()
         results = await asyncio.gather(
-            *(m.is_available() for m in ALL_MANAGERS), return_exceptions=True
+            *(m.is_available() for m in all_managers), return_exceptions=True
         )
         self._available = {
             m.key: (bool(r) if not isinstance(r, Exception) else False)
-            for m, r in zip(ALL_MANAGERS, results, strict=True)
+            for m, r in zip(all_managers, results, strict=True)
         }
         container = self.query_one("#manager-checks", Vertical)
         await container.remove_children()
         saved = set(self._cfg.get("managers") or [])
-        for m in ALL_MANAGERS:
+        for m in all_managers:
             available = self._available[m.key]
             label = f"{m.icon} {m.name}  " + (
                 "[dim]✓ installed[/dim]" if available else "[red]✗ not found[/red]"
@@ -162,7 +163,7 @@ class OnboardingScreen(Screen[dict[str, Any] | None]):
             )
             await container.mount(cb)
         self.query_one("#detect-status", Label).update(
-            f"Detected {sum(self._available.values())} of {len(ALL_MANAGERS)} managers installed."
+            f"Detected {sum(self._available.values())} of {len(all_managers)} managers installed."
         )
 
     def _update_nav(self) -> None:
@@ -184,7 +185,7 @@ class OnboardingScreen(Screen[dict[str, Any] | None]):
 
     def _collect(self) -> None:
         managers: list[str] = []
-        for m in ALL_MANAGERS:
+        for m in discover_managers():
             try:
                 cb = self.query_one(f"#mgr-{m.key}", Checkbox)
             except Exception:

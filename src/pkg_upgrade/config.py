@@ -1,4 +1,4 @@
-"""Persistent user configuration at ~/.mac-upgrade (JSON)."""
+"""Persistent user configuration for pkg-upgrade."""
 
 from __future__ import annotations
 
@@ -6,8 +6,12 @@ import contextlib
 import json
 import os
 import tempfile
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, TypedDict
+
+import yaml
+from platformdirs import user_config_path
 
 CONFIG_VERSION = 1
 
@@ -38,6 +42,67 @@ DEFAULT_CONFIG: dict[str, Any] = {
 KNOWN_MANAGERS = {"brew", "cask", "pip", "npm", "gem", "system"}
 
 
+@dataclass
+class Config:
+    """Structured configuration loaded from the YAML config file.
+
+    Contains new keys added in Task 8 alongside any future fields.
+    """
+
+    disabled_managers: set[str] = field(default_factory=set)
+    per_manager: dict[str, Any] = field(default_factory=dict)
+    max_parallel: int | None = None
+
+
+def config_file_path() -> Path:
+    """Return the canonical path to the YAML config file, using platformdirs."""
+    return user_config_path("pkg-upgrade") / "config.yaml"
+
+
+def load_config(path: Path | None = None) -> Config:
+    """Load structured Config from a YAML file.
+
+    Returns a Config with defaults if the file is missing or unreadable.
+    The ``path`` argument defaults to ``config_file_path()``.
+    """
+    p = path if path is not None else config_file_path()
+    if not p.exists():
+        return Config()
+    try:
+        raw = p.read_text()
+        data = yaml.safe_load(raw)
+    except (OSError, yaml.YAMLError):
+        return Config()
+    if not isinstance(data, dict):
+        return Config()
+
+    disabled: set[str] = set()
+    raw_disabled = data.get("disabled_managers")
+    if isinstance(raw_disabled, list):
+        disabled = {str(m) for m in raw_disabled}
+
+    per_manager: dict[str, Any] = {}
+    raw_per_manager = data.get("per_manager")
+    if isinstance(raw_per_manager, dict):
+        per_manager = raw_per_manager
+
+    max_parallel: int | None = None
+    raw_max_parallel = data.get("max_parallel")
+    if isinstance(raw_max_parallel, int):
+        max_parallel = raw_max_parallel
+
+    return Config(
+        disabled_managers=disabled,
+        per_manager=per_manager,
+        max_parallel=max_parallel,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Legacy JSON-based config (preserved for backward compatibility)
+# ---------------------------------------------------------------------------
+
+
 def default_config_path() -> Path:
     return Path.home() / ".mac-upgrade"
 
@@ -46,8 +111,8 @@ def config_exists(path: Path | None = None) -> bool:
     return (path or default_config_path()).exists()
 
 
-def load_config(path: Path | None = None) -> tuple[dict[str, Any], str | None]:
-    """Load config from disk.
+def load_config_dict(path: Path | None = None) -> tuple[dict[str, Any], str | None]:
+    """Load legacy JSON config from disk.
 
     Returns (config_dict, warning_or_None). If the file is missing, malformed,
     or has a version mismatch, returns DEFAULT_CONFIG plus a human-readable
@@ -85,7 +150,7 @@ def load_config(path: Path | None = None) -> tuple[dict[str, Any], str | None]:
 
 
 def save_config(cfg: dict[str, Any], path: Path | None = None) -> None:
-    """Atomically write config JSON.
+    """Atomically write legacy JSON config.
 
     Preserves unknown top-level keys that were already present in the file
     on disk (forward compatibility).

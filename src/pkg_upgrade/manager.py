@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import ClassVar
 
-from mac_upgrade.models import Package, Result
+from pkg_upgrade.models import Package, Result
 
 
 class PackageManager(ABC):
@@ -12,6 +12,9 @@ class PackageManager(ABC):
     name: ClassVar[str]
     key: ClassVar[str]
     icon: ClassVar[str]
+    platforms: ClassVar[frozenset[str]] = frozenset()
+    depends_on: ClassVar[tuple[str, ...]] = ()
+    install_hint: ClassVar[str] = ""
 
     @abstractmethod
     async def is_available(self) -> bool: ...

@@ -3,9 +3,9 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from mac_upgrade import _brew_cache
-from mac_upgrade.managers.cask import CaskManager
-from mac_upgrade.models import Package
+from pkg_upgrade import _brew_cache
+from pkg_upgrade.managers.cask import CaskManager
+from pkg_upgrade.models import Package
 
 
 @pytest.fixture(autouse=True)
@@ -31,7 +31,7 @@ async def test_check_outdated_parses_casks():
         }
     )
     with patch(
-        "mac_upgrade._brew_cache.run_command", new=AsyncMock(return_value=(0, brew_output, ""))
+        "pkg_upgrade._brew_cache.run_command", new=AsyncMock(return_value=(0, brew_output, ""))
     ):
         packages = await CaskManager().check_outdated()
     assert len(packages) == 1
@@ -43,7 +43,7 @@ async def test_check_outdated_parses_casks():
 async def test_upgrade_cask_success():
     pkg = Package("firefox", "130.0", "131.0")
     with patch(
-        "mac_upgrade.managers.cask.run_command", new=AsyncMock(return_value=(0, "Upgraded", ""))
+        "pkg_upgrade.managers.cask.run_command", new=AsyncMock(return_value=(0, "Upgraded", ""))
     ):
         result = await CaskManager().upgrade(pkg)
     assert result.success is True

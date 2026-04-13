@@ -10,12 +10,12 @@ from textual.binding import Binding
 from textual.containers import VerticalScroll
 from textual.widgets import Static
 
-from mac_upgrade.executor import Executor, ManagerState
-from mac_upgrade.managers import get_managers
-from mac_upgrade.models import Result
-from mac_upgrade.notifier import Notifier
-from mac_upgrade.status import ACTIVE_STATUSES, ManagerStatus
-from mac_upgrade.widgets import LiveLogPanel, ManagerCard
+from pkg_upgrade.executor import Executor, ManagerState
+from pkg_upgrade.models import Result
+from pkg_upgrade.notifier import Notifier
+from pkg_upgrade.registry import discover_managers, select_managers
+from pkg_upgrade.status import ACTIVE_STATUSES, ManagerStatus
+from pkg_upgrade.widgets import LiveLogPanel, ManagerCard
 
 
 class AppPhase(StrEnum):
@@ -24,10 +24,10 @@ class AppPhase(StrEnum):
     SUMMARY = "summary"
 
 
-class MacUpgradeApp(App[None]):
-    """TUI dashboard for upgrading macOS packages."""
+class PkgUpgradeApp(App[None]):
+    """TUI dashboard for upgrading installed package managers."""
 
-    TITLE = "mac-upgrade"
+    TITLE = "pkg-upgrade"
     CSS = """
     #header-bar {
         dock: top;
@@ -66,10 +66,12 @@ class MacUpgradeApp(App[None]):
         notify: bool = True,
         log_path: str | None = None,
         list_only: bool = False,
+        max_parallel: int | None = None,
     ) -> None:
         super().__init__()
-        managers = get_managers(skip=skip, only=only)
+        managers = select_managers(discover_managers(), skip=skip, only=only)
         self.executor = Executor.from_managers(managers)
+        self.executor.set_max_parallel(max_parallel)
         self.auto_yes = auto_yes
         self.dry_run = dry_run
         self.notifier = Notifier(log_path=log_path, notify=notify)
@@ -83,7 +85,7 @@ class MacUpgradeApp(App[None]):
     def compose(self) -> ComposeResult:
         today = date.today().strftime("%d %b %Y")
         yield Static(
-            f"🚀 mac-upgrade                                           {today}",
+            f"🚀 pkg-upgrade                                           {today}",
             id="header-bar",
         )
         with VerticalScroll(id="managers-container"):
@@ -246,7 +248,7 @@ class MacUpgradeApp(App[None]):
         if total_skipped:
             summary += f", {total_skipped} skipped"
 
-        title = "mac-upgrade complete" if total_failed == 0 else "mac-upgrade finished with errors"
+        title = "pkg-upgrade complete" if total_failed == 0 else "pkg-upgrade finished with errors"
         await self.notifier.send_notification(title, summary)
 
         footer = self.query_one("#footer-help", Static)

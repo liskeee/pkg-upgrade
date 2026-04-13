@@ -1,8 +1,9 @@
 import argparse
 from typing import Any
 
-from mac_upgrade.cli import get_log_path, parse_args, resolve_settings
-from mac_upgrade.config import DEFAULT_CONFIG
+import pkg_upgrade.cli as cli_module
+from pkg_upgrade.cli import build_parser, get_log_path, main, parse_args, resolve_settings
+from pkg_upgrade.config import DEFAULT_CONFIG
 
 
 def test_default_args():
@@ -16,6 +17,8 @@ def test_default_args():
     assert args.log_dir is None
     assert args.list_managers is False
     assert args.onboard is False
+    assert args.show_graph is False
+    assert args.max_parallel is None
 
 
 def test_skip_flag():
@@ -85,6 +88,9 @@ def _args(**overrides: Any) -> argparse.Namespace:
         "log_dir": None,
         "list_managers": False,
         "onboard": False,
+        "show_graph": False,
+        "max_parallel": None,
+        "self_update": False,
     }
     base.update(overrides)
     return argparse.Namespace(**base)
@@ -139,3 +145,63 @@ def test_resolve_log_dir_flag_overrides(tmp_path):
     cfg["log_dir"] = "/does/not/exist"
     s = resolve_settings(_args(log_dir=str(tmp_path)), cfg)
     assert str(tmp_path) in s["log_path"]
+
+
+# --- new CLI feature tests ---
+
+
+def test_parser_exposes_new_flags():
+    p = build_parser()
+    ns = p.parse_args(["--show-graph", "--max-parallel", "3"])
+    assert ns.show_graph is True
+    assert ns.max_parallel == 3
+
+
+def test_list_groups_by_availability(capsys, monkeypatch):
+    monkeypatch.setattr("sys.argv", ["pkg-upgrade", "--list"])
+    rc = main()
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert "Available" in out
+    # At least one of these must appear depending on the OS:
+    assert "Unavailable" in out or "Not on this OS" in out
+
+
+def test_show_graph_prints_levels(capsys, monkeypatch):
+    monkeypatch.setattr("sys.argv", ["pkg-upgrade", "--show-graph"])
+    rc = main()
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert "level" in out.lower() or "Level" in out
+
+
+def test_max_parallel_flag():
+    p = build_parser()
+    ns = p.parse_args(["--max-parallel", "4"])
+    assert ns.max_parallel == 4
+
+
+def test_max_parallel_default():
+    p = build_parser()
+    ns = p.parse_args([])
+    assert ns.max_parallel is None
+
+
+def test_self_update_flag_in_parser() -> None:
+    p = build_parser()
+    ns = p.parse_args(["--self-update"])
+    assert ns.self_update is True
+
+
+def test_self_update_invokes_helper(monkeypatch: Any, capsys: Any) -> None:
+    calls: dict[str, bool] = {}
+
+    def fake_run_self_update() -> int:
+        calls["ran"] = True
+        return 0
+
+    monkeypatch.setattr(cli_module, "run_self_update", fake_run_self_update)
+    monkeypatch.setattr("sys.argv", ["pkg-upgrade", "--self-update"])
+    rc = main()
+    assert rc == 0
+    assert calls["ran"] is True

@@ -98,8 +98,8 @@ jobs:
         run: |
           python -m venv .smoke
           .smoke/bin/pip install dist/*.whl
-          .smoke/bin/mac-upgrade --version
-          .smoke/bin/mac-upgrade --help
+          .smoke/bin/pkg-upgrade --version
+          .smoke/bin/pkg-upgrade --help
 
   security:
     runs-on: macos-latest

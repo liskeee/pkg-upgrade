@@ -1,17 +1,20 @@
 import re
 import shutil
 
-from mac_upgrade._subprocess import run_command
-from mac_upgrade.manager import PackageManager
-from mac_upgrade.models import Package, Result
+from pkg_upgrade._subprocess import run_command
+from pkg_upgrade.manager import PackageManager
+from pkg_upgrade.models import Package, Result
+from pkg_upgrade.registry import register_manager
 
 GEM_LINE_RE = re.compile(r"^(\S+)\s+\((\S+)\s+<\s+(\S+)\)$")
 
 
+@register_manager
 class GemManager(PackageManager):
     name = "gem"
     key = "gem"
     icon = "💎"
+    platforms = frozenset({"macos", "linux", "windows"})
 
     async def is_available(self) -> bool:
         return shutil.which("gem") is not None

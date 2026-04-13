@@ -1,15 +1,19 @@
 import shutil
 
-from mac_upgrade._brew_cache import get_brew_outdated
-from mac_upgrade._subprocess import run_command
-from mac_upgrade.manager import PackageManager
-from mac_upgrade.models import Package, Result
+from pkg_upgrade._brew_cache import get_brew_outdated
+from pkg_upgrade._subprocess import run_command
+from pkg_upgrade.manager import PackageManager
+from pkg_upgrade.models import Package, Result
+from pkg_upgrade.registry import register_manager
 
 
+@register_manager
 class CaskManager(PackageManager):
     name = "Homebrew Casks"
     key = "cask"
     icon = "🍻"
+    platforms = frozenset({"macos"})
+    depends_on = ("brew",)
 
     async def is_available(self) -> bool:
         return shutil.which("brew") is not None

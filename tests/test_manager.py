@@ -1,7 +1,8 @@
 import pytest
 
-from mac_upgrade.managers import ALL_MANAGERS, get_managers
-from mac_upgrade.models import Package
+from pkg_upgrade.manager import PackageManager
+from pkg_upgrade.models import Package, Result
+from pkg_upgrade.registry import discover_managers, select_managers
 from tests.conftest import FakeManager
 
 
@@ -41,22 +42,55 @@ async def test_upgrade_all():
 
 
 def test_all_managers_contains_six():
-    assert len(ALL_MANAGERS) == 6
+    assert len(discover_managers(load_entry_points=False, load_declarative=False)) == 6
 
 
 def test_all_managers_keys_unique():
-    keys = [m.key for m in ALL_MANAGERS]
+    keys = [m.key for m in discover_managers(load_entry_points=False, load_declarative=False)]
     assert len(keys) == len(set(keys))
 
 
 def test_get_managers_skip():
-    managers = get_managers(skip={"brew", "pip"})
+    managers = select_managers(
+        discover_managers(load_entry_points=False, load_declarative=False),
+        skip={"brew", "pip"},
+    )
     keys = {m.key for m in managers}
     assert "brew" not in keys and "pip" not in keys
     assert "npm" in keys
 
 
 def test_get_managers_only():
-    managers = get_managers(only={"npm", "gem"})
+    managers = select_managers(
+        discover_managers(load_entry_points=False, load_declarative=False),
+        only={"npm", "gem"},
+    )
     keys = {m.key for m in managers}
     assert keys == {"npm", "gem"}
+
+
+def test_package_manager_has_required_class_vars():
+    assert hasattr(PackageManager, "platforms")
+    assert hasattr(PackageManager, "depends_on")
+    assert hasattr(PackageManager, "install_hint")
+
+
+def test_concrete_manager_declares_platforms():
+    class Fake(PackageManager):
+        name = "Fake"
+        key = "fake"
+        icon = "x"
+        platforms = frozenset({"macos"})
+
+        async def is_available(self) -> bool:
+            return True
+
+        async def check_outdated(self) -> list[Package]:
+            return []
+
+        async def upgrade(self, package: Package) -> Result:
+            raise NotImplementedError
+
+    assert Fake.platforms == frozenset({"macos"})
+    assert Fake.depends_on == ()
+    assert Fake.install_hint == ""

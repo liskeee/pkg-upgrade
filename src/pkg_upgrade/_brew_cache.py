@@ -6,7 +6,7 @@ import asyncio
 import json
 from typing import Any
 
-from mac_upgrade._subprocess import run_command
+from pkg_upgrade._subprocess import run_command
 
 
 class _BrewCache:

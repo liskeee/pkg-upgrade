@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from mac_upgrade.notifier import Notifier
+from pkg_upgrade.notifier import Notifier
 
 
 def test_log_writes_to_file(tmp_path):
@@ -40,7 +40,7 @@ def test_log_appends(tmp_path):
 async def test_notification_sends():
     n = Notifier(log_path=None, notify=True)
     with patch(
-        "mac_upgrade.notifier.run_command", new=AsyncMock(return_value=(0, "", ""))
+        "pkg_upgrade.notifier.run_command", new=AsyncMock(return_value=(0, "", ""))
     ) as mock_run:
         await n.send_notification("title", "body")
         mock_run.assert_called_once()
@@ -50,7 +50,7 @@ async def test_notification_sends():
 async def test_notification_suppressed():
     n = Notifier(log_path=None, notify=False)
     with patch(
-        "mac_upgrade.notifier.run_command", new=AsyncMock(return_value=(0, "", ""))
+        "pkg_upgrade.notifier.run_command", new=AsyncMock(return_value=(0, "", ""))
     ) as mock_run:
         await n.send_notification("title", "body")
         mock_run.assert_not_called()

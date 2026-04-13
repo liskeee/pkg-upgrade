@@ -1,15 +1,19 @@
 import json
 import shutil
 
-from mac_upgrade._subprocess import run_command
-from mac_upgrade.manager import PackageManager
-from mac_upgrade.models import Package, Result
+from pkg_upgrade._subprocess import run_command
+from pkg_upgrade.manager import PackageManager
+from pkg_upgrade.models import Package, Result
+from pkg_upgrade.registry import register_manager
 
 
+@register_manager
 class PipManager(PackageManager):
     name = "pip"
     key = "pip"
     icon = "🐍"
+    platforms = frozenset({"macos", "linux", "windows"})
+    depends_on = ("brew",)
 
     async def is_available(self) -> bool:
         return shutil.which("pip3") is not None

@@ -4,7 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-`mac-upgrade` is a Textual-based TUI that orchestrates upgrades across every macOS package manager installed (Homebrew formulas/casks, pip, npm, gem, `softwareupdate`). macOS-only, Python 3.12+.
+`pkg-upgrade` is a cross-platform (macOS/Linux/Windows) Textual TUI and CLI that orchestrates upgrades across every installed package manager. Python 3.12+.
+
+Managers register through one of three paths: `@register_manager` decorator (built-ins), `pkg_upgrade.managers` entry points (third-party plugins), or YAML manifests under `src/pkg_upgrade/managers/declarative/` (no Python required for CLI-wrapping managers). Scheduling is topo-sorted from each manager's `depends_on`.
 
 ## Common commands
 
@@ -13,7 +15,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 python -m pip install -e ".[dev]"
 
 # Run the TUI locally
-mac-upgrade                       # or: python -m mac_upgrade.cli
+pkg-upgrade                       # or: python -m pkg_upgrade.cli
 
 # Tests
 pytest                            # full suite
@@ -36,26 +38,26 @@ CI runs on `macos-latest` against Python 3.12 and 3.13 — keep both green.
 
 Execution flows through three layers. Understand them before editing:
 
-1. **Managers** ([src/mac_upgrade/managers/](src/mac_upgrade/managers/)) — one module per backend (`brew`, `cask`, `pip`, `npm`, `gem`, `system`). Each implements the `PackageManager` ABC in [manager.py](src/mac_upgrade/manager.py): `is_available()`, `check_outdated() -> list[Package]`, `upgrade(pkg) -> Result`. `ALL_MANAGERS` is the registry exported from `managers/__init__.py`.
+1. **Managers** ([src/pkg_upgrade/managers/](src/pkg_upgrade/managers/)) — one module per backend (`brew`, `cask`, `pip`, `npm`, `gem`, `system`). Each implements the `PackageManager` ABC in [manager.py](src/pkg_upgrade/manager.py): `is_available()`, `check_outdated() -> list[Package]`, `upgrade(pkg) -> Result`. `ALL_MANAGERS` is the registry exported from `managers/__init__.py`.
 
-2. **Executor** ([executor.py](src/mac_upgrade/executor.py)) — groups managers into `ExecutionGroup`s and runs them. Scheduling rule (important, encoded in `Executor.from_managers`):
+2. **Executor** ([executor.py](src/pkg_upgrade/executor.py)) — groups managers into `ExecutionGroup`s and runs them. Scheduling rule (important, encoded in `Executor.from_managers`):
    - `SEQUENTIAL_CHAIN = ["brew", "cask", "pip"]` — run strictly in order (cask depends on brew; pip can conflict).
    - `INDEPENDENT = ["npm", "gem", "system"]` — run in parallel with each other, in parallel with the chain.
-   - Per-manager state lives in `ManagerState` with a `ManagerStatus` enum ([status.py](src/mac_upgrade/status.py)). Progress is surfaced via `on_update` / `on_result` async callbacks — the UI is a consumer, not a driver.
+   - Per-manager state lives in `ManagerState` with a `ManagerStatus` enum ([status.py](src/pkg_upgrade/status.py)). Progress is surfaced via `on_update` / `on_result` async callbacks — the UI is a consumer, not a driver.
 
-3. **UI + CLI** ([app.py](src/mac_upgrade/app.py), [widgets.py](src/mac_upgrade/widgets.py), [cli.py](src/mac_upgrade/cli.py)) — Textual app renders `Executor` state; CLI parses `--yes / --only / --skip / --dry-run / --list` and wires the same executor in non-interactive mode.
+3. **UI + CLI** ([app.py](src/pkg_upgrade/app.py), [widgets.py](src/pkg_upgrade/widgets.py), [cli.py](src/pkg_upgrade/cli.py)) — Textual app renders `Executor` state; CLI parses `--yes / --only / --skip / --dry-run / --list` and wires the same executor in non-interactive mode.
 
-Shared primitives: [models.py](src/mac_upgrade/models.py) (`Package`, `Result`), [_subprocess.py](src/mac_upgrade/_subprocess.py) (all shell calls go through this — do not call `asyncio.create_subprocess_*` directly from managers), [_brew_cache.py](src/mac_upgrade/_brew_cache.py) (shared `brew outdated` cache so `brew` and `cask` don't double-query), [notifier.py](src/mac_upgrade/notifier.py) (macOS notification on completion), [config.py](src/mac_upgrade/config.py), [onboarding.py](src/mac_upgrade/onboarding.py).
+Shared primitives: [models.py](src/pkg_upgrade/models.py) (`Package`, `Result`), [_subprocess.py](src/pkg_upgrade/_subprocess.py) (all shell calls go through this — do not call `asyncio.create_subprocess_*` directly from managers), [_brew_cache.py](src/pkg_upgrade/_brew_cache.py) (shared `brew outdated` cache so `brew` and `cask` don't double-query), [notifier.py](src/pkg_upgrade/notifier.py) (macOS notification on completion), [config.py](src/pkg_upgrade/config.py), [onboarding.py](src/pkg_upgrade/onboarding.py).
 
-When adding a new package manager: implement `PackageManager`, register it in `managers/__init__.py`, and decide whether it belongs in the sequential chain or the independent set in [executor.py](src/mac_upgrade/executor.py).
+When adding a new package manager: implement `PackageManager`, register it in `managers/__init__.py`, and decide whether it belongs in the sequential chain or the independent set in [executor.py](src/pkg_upgrade/executor.py).
 
 ## Distribution
 
 Three install paths are maintained in parallel — changes to entry points or runtime deps must be reflected in all three:
 
-- [install.sh](install.sh) — `curl | bash` installer; prefers `pipx`, falls back to a self-managed venv at `~/.local/share/mac-upgrade/`. Honors `MAC_UPGRADE_REF` (git ref) and `MAC_UPGRADE_SOURCE` (override).
-- [Formula/mac-upgrade.rb](Formula/mac-upgrade.rb) — Homebrew tap formula.
-- [pyproject.toml](pyproject.toml) — `pipx install` / PyPI path; `mac-upgrade` script entry points to `mac_upgrade.cli:main`.
+- [install.sh](install.sh) — `curl | bash` installer; prefers `pipx`, falls back to a self-managed venv at `~/.local/share/pkg-upgrade/`. Honors `MAC_UPGRADE_REF` (git ref) and `MAC_UPGRADE_SOURCE` (override).
+- [Formula/pkg-upgrade.rb](Formula/pkg-upgrade.rb) — Homebrew tap formula.
+- [pyproject.toml](pyproject.toml) — `pipx install` / PyPI path; `pkg-upgrade` script entry points to `pkg_upgrade.cli:main`.
 
 ## Conventions
 
