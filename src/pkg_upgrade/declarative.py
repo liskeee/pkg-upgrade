@@ -12,7 +12,7 @@ from pkg_upgrade.manager import PackageManager
 from pkg_upgrade.models import Package, Result
 from pkg_upgrade.parsers import get_parser
 from pkg_upgrade.platform import is_windows_admin, sudo_available_noninteractive
-from pkg_upgrade.registry import register_manager
+from pkg_upgrade.registry import _REGISTRY, register_manager
 
 _REQUIRED_TOP = {"name", "key", "icon", "platforms", "check", "upgrade"}
 _REQUIRED_CHECK = {"cmd", "parser"}
@@ -130,5 +130,7 @@ def load_declarative_dir(directory: Path | None) -> None:
     for yml in sorted(directory.glob("*.yaml")):
         data = yaml.safe_load(yml.read_text(encoding="utf-8"))
         manifest = _Manifest.from_dict(data)
+        if manifest.key in _REGISTRY:
+            continue
         cls = _build_class(manifest)
         register_manager(cls)
